@@ -1,2 +1,3 @@
 CNN-build/runs/*
 CNN-build/_vizdoom
+*.ini
