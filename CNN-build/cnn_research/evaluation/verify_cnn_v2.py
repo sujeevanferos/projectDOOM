@@ -5,9 +5,9 @@ Runs 1000 normal-brightness episodes and 1000 episodes at each of 0.5x and
 0.75x brightness by default. All evaluations are CNN-only (no labels, no
 random actions, no optimizer or gradient updates).
 
-Run from CNN-build (with train_imitation_cnn.py alongside this file):
-    python verify_cnn_v2.py --headless
-    python verify_cnn_v2.py --headless --normal-episodes 1000 --dark-episodes 500
+Run from CNN-build:
+    python -m cnn_research.evaluation.verify_cnn_v2 --headless
+    python -m cnn_research.evaluation.verify_cnn_v2 --headless --normal-episodes 1000 --dark-episodes 500
 
 Outputs in runs/cnn_v2_verification/ by default; refuses to overwrite data.
 """

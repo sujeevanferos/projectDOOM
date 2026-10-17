@@ -2,9 +2,9 @@
 """Label-guided ViZDoom basic.wad aiming teacher (NO neural-network training).
 
 Examples:
-    python labelled_aiming_agent.py --episodes 100 --headless
-    python labelled_aiming_agent.py --episodes 100 --headless --save-demos
-    python labelled_aiming_agent.py --episodes 5 --verbose
+    python -m cnn_research.teacher.labelled_aiming_agent --episodes 100 --headless
+    python -m cnn_research.teacher.labelled_aiming_agent --episodes 100 --headless --save-demos
+    python -m cnn_research.teacher.labelled_aiming_agent --episodes 5 --verbose
 
 Requires: pip install vizdoom numpy
 

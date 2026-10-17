@@ -112,5 +112,52 @@
     "CNN-build/runs/imitation_cnn_brightness/split_manifest.json": "9b972730b1302a60b4b7d61f10507b29f7023193a7724416e974dac7d88271fc",
     "CNN-build/runs/imitation_robustness_1000/summary.json": "1e9553eee1f9e56aad82bfde3fa1a36e9a141fd338a9bb909451baff6093fb29",
     "CNN-build/runs/labelled_teacher/metrics.csv": "a8d594da99fe33962913ffee6fc5c9f9f7f8edc7ce468ed587c4ae007b8452f6"
+  },
+  "entry_point_updates": {
+    "CNN-build/cnn_research/exploration/labelled_buffer_cnn.py": {
+      "python doom_dqn_baseline.py": "python -m cnn_research.training.doom_dqn_baseline",
+      "Button order matches basic.py:": "Button order matches cnn_research.exploration.basic:"
+    },
+    "CNN-build/cnn_research/teacher/calibrate_aiming.py": {
+      "python calibrate_aiming.py": "python -m cnn_research.teacher.calibrate_aiming"
+    },
+    "CNN-build/cnn_research/teacher/labelled_aiming_agent.py": {
+      "python labelled_aiming_agent.py": "python -m cnn_research.teacher.labelled_aiming_agent"
+    },
+    "CNN-build/cnn_research/teacher/labelled_aiming_agent_safe.py": {
+      "python labelled_aiming_agent.py": "python -m cnn_research.teacher.labelled_aiming_agent"
+    },
+    "CNN-build/cnn_research/training/doom_dqn_baseline.py": {
+      "python doom_dqn_baseline.py": "python -m cnn_research.training.doom_dqn_baseline",
+      "Button order matches basic.py:": "Button order matches cnn_research.exploration.basic:"
+    },
+    "CNN-build/cnn_research/training/train_imitation_cnn.py": {
+      "python train_imitation_cnn.py": "python -m cnn_research.training.train_imitation_cnn"
+    },
+    "CNN-build/cnn_research/training/train_imitation_cnn_brightness.py": {
+      "python train_imitation_cnn_brightness.py": "python -m cnn_research.training.train_imitation_cnn_brightness",
+      "python evaluate_brightness_robustness.py": "python -m cnn_research.evaluation.evaluate_brightness_robustness",
+      "Evaluate with evaluate_brightness_robustness.py using a new --out-dir": "Evaluate with python -m cnn_research.evaluation.evaluate_brightness_robustness using a new --out-dir"
+    },
+    "CNN-build/cnn_research/evaluation/evaluate_imitation_robustness.py": {
+      "python evaluate_imitation_robustness.py": "python -m cnn_research.evaluation.evaluate_imitation_robustness",
+      "Run from directory containing train_imitation_cnn.py:": "Run from CNN-build:"
+    },
+    "CNN-build/cnn_research/evaluation/evaluate_brightness_robustness.py": {
+      "Requires train_imitation_cnn.py in the same directory. No labels or training.": "Run from CNN-build; imports cnn_research.training.train_imitation_cnn. No labels or training.",
+      "Path('train_imitation_cnn.py').exists()": "Path('cnn_research/training/train_imitation_cnn.py').exists()",
+      "Run from CNN-build with train_imitation_cnn.py in this directory": "Run from CNN-build with cnn_research/training/train_imitation_cnn.py available"
+    },
+    "CNN-build/cnn_research/evaluation/verify_cnn_v2.py": {
+      "python verify_cnn_v2.py": "python -m cnn_research.evaluation.verify_cnn_v2",
+      "Run from CNN-build (with train_imitation_cnn.py alongside this file):": "Run from CNN-build:"
+    },
+    "CNN-build/cnn_research/analysis/experiment_5b_feature_visualization.py": {
+      "python experiment_5b_feature_visualization.py": "python -m cnn_research.analysis.experiment_5b_feature_visualization",
+      "Requires train_imitation_cnn.py in the same folder. Uses the ORIGINAL trained": "Imports cnn_research.training.train_imitation_cnn. Uses the ORIGINAL trained"
+    },
+    "CNN-build/cnn_research/analysis/compare_brightness_models.py": {
+      "python compare_brightness_models.py": "python -m cnn_research.analysis.compare_brightness_models"
+    }
   }
 }

@@ -1,7 +1,9 @@
 """CPU unit tests; engine, original artifacts and gameplay have separate opt-ins."""
+import ast
 import importlib
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -11,7 +13,12 @@ from types import ModuleType, SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from test_structure import CNN, MANIFEST, ROOT, np
+from test_structure import CNN, MANIFEST, ROOT, original_function, script_path
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 HAS_TORCH = importlib.util.find_spec("torch") is not None
 HAS_VIZDOOM = importlib.util.find_spec("vizdoom") is not None
@@ -49,7 +56,7 @@ class CPUModelTests(unittest.TestCase):
         self.assertEqual({key: tuple(value.shape) for key, value in model.state_dict().items()}, expected)
 
     def test_baseline_model_state_dict_loads_into_relocated_model(self):
-        entry = next(e for e in MANIFEST["scripts"] if Path(e["old"]).stem == "train_imitation_cnn")
+        entry = next(e for e in MANIFEST["scripts"] if Path(e["new"]).stem == "train_imitation_cnn")
         source = subprocess.check_output(["git", "show", f'{MANIFEST["baseline_commit"]}:{entry["old"]}'], cwd=ROOT, text=True, encoding="utf-8")
         namespace = {"__name__": "original_student"}
         with patch.dict(sys.modules, {} if HAS_VIZDOOM else {"vizdoom": ModuleType("vizdoom")}):
@@ -67,10 +74,10 @@ class CPUModelTests(unittest.TestCase):
             for before, after in zip(original(images), relocated(images)):
                 self.torch.testing.assert_close(before, after, rtol=0, atol=0)
 
-    def test_legacy_import_exposes_same_model(self):
-        legacy = importlib.import_module("train_imitation_cnn")
-        self.assertIs(legacy.DoomImitationCNN, self.student.DoomImitationCNN)
+    def test_package_consumers_use_same_model(self):
         self.assertIs(self.brightness.DoomImitationCNN, self.student.DoomImitationCNN)
+        self.assertIs(self.evaluator.DoomImitationCNN, self.student.DoomImitationCNN)
+        self.assertIs(self.verify.DoomImitationCNN, self.student.DoomImitationCNN)
 
     def test_dataset_rgb_normalization_and_duration_classes(self):
         episode = {"frames": np.full((3, 3, 60, 80), 255, dtype=np.uint8),
@@ -142,14 +149,49 @@ class CPUModelTests(unittest.TestCase):
 class CLITests(unittest.TestCase):
     def test_all_argument_driven_entry_points(self):
         for entry in MANIFEST["scripts"]:
-            if Path(entry["old"]).stem == "basic":
+            if Path(entry["new"]).stem == "basic":
                 continue  # Original script has no argparse and immediately starts visible gameplay.
-            for args in ([Path(entry["old"]).name], ["-m", entry["module"]]):
-                with self.subTest(args=args):
-                    result = subprocess.run([sys.executable, *args, "--help"], cwd=CNN, text=True, capture_output=True, timeout=60)
-                    self.assertEqual(result.returncode, 0, result.stderr)
-                    self.assertIn("usage:", result.stdout)
-                    self.assertNotIn("RuntimeWarning", result.stderr)
+            with self.subTest(module=entry["module"]):
+                result = subprocess.run([sys.executable, "-m", entry["module"], "--help"], cwd=CNN, text=True, capture_output=True, timeout=60)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn("usage:", result.stdout)
+                self.assertNotIn("RuntimeWarning", result.stderr)
+
+
+@unittest.skipIf(np is None, "NumPy unavailable")
+class ArrayTests(unittest.TestCase):
+    def test_preprocessing_layout_shape_values_and_contiguity(self):
+        chw = np.arange(3 * 120 * 160, dtype=np.uint8).reshape(3, 120, 160)
+        for script, name in [("train_imitation_cnn", "preprocess"), ("doom_dqn_baseline", "preprocess"),
+                             ("labelled_aiming_agent_safe", "rgb_chw_uint8")]:
+            preprocess = original_function(script, name, np=np, SCREEN_W=160, SCREEN_H=120)
+            for frame in [chw, chw.transpose(1, 2, 0)]:
+                result = preprocess(frame)
+                self.assertEqual(result.shape, (3, 60, 80))
+                self.assertEqual(result.dtype, np.uint8)
+                self.assertTrue(result.flags.c_contiguous)
+                np.testing.assert_array_equal(result, chw[:, ::2, ::2])
+            with self.assertRaises(ValueError):
+                preprocess(np.zeros((60, 80, 3), dtype=np.uint8))
+
+    def test_episode_split_executes_original_statements(self):
+        splits = []
+        for script in ("train_imitation_cnn", "train_imitation_cnn_brightness"):
+            tree = ast.parse(script_path(script).read_text(encoding="utf-8"))
+            main = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "main")
+            # Execute only the original split assignments; no training or data loading.
+            names = {"indices", "n_val", "val_indices", "train_indices", "val_eps", "train_eps"}
+            nodes = [n for n in main.body if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name) and n.targets[0].id in names]
+            namespace = {"np": np, "args": SimpleNamespace(seed=42, val_fraction=0.2), "episodes": list(range(1000))}
+            exec(compile(ast.Module(body=nodes, type_ignores=[]), str(script_path(script)), "exec"), namespace)
+            train, val = namespace["train_eps"], namespace["val_eps"]
+            self.assertEqual((len(train), len(val)), (800, 200))
+            self.assertFalse(set(train) & set(val))
+            self.assertEqual(set(train) | set(val), set(range(1000)))
+            splits.append((train, val))
+        self.assertEqual(splits[0], splits[1])
+        manifest = json.loads((CNN / "runs/imitation_cnn_brightness/split_manifest.json").read_text())
+        self.assertEqual([f"demo_{i + 1:05d}.npz" for i in splits[1][1]], manifest["validation_files"])
 
 
 @unittest.skipUnless(HAS_TORCH and HAS_VIZDOOM and os.environ.get("DOOM_RUN_GAMEPLAY") == "1", "Optional: set DOOM_RUN_GAMEPLAY=1 with ViZDoom installed")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Calibrate the effect of ViZDoom MOVE_LEFT/MOVE_RIGHT on enemy screen position.
 
-Run: python calibrate_aiming.py --episodes 5 --tics 2
+Run: python -m cnn_research.teacher.calibrate_aiming --episodes 5 --tics 2
 This does NOT train a neural network.
 """
 import argparse

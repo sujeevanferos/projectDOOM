@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Fresh CNN-only ViZDoom robustness evaluation; never modifies trained weights.
 
-Run from directory containing train_imitation_cnn.py:
-  python evaluate_imitation_robustness.py --episodes 1000 --headless
+Run from CNN-build:
+  python -m cnn_research.evaluation.evaluate_imitation_robustness --episodes 1000 --headless
 """
 import argparse
 import csv

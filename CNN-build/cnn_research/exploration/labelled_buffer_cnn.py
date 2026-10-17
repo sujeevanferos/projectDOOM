@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Minimal, trainable CNN + vanilla DQN baseline for ViZDoom basic.wad.
 
-Train: python doom_dqn_baseline.py --episodes 1000 --headless
-Watch: python doom_dqn_baseline.py --eval --checkpoint runs/basic_dqn/best.pt
-Resume: python doom_dqn_baseline.py --episodes 500 --resume runs/basic_dqn/latest.pt --headless
+Train: python -m cnn_research.training.doom_dqn_baseline --episodes 1000 --headless
+Watch: python -m cnn_research.training.doom_dqn_baseline --eval --checkpoint runs/basic_dqn/best.pt
+Resume: python -m cnn_research.training.doom_dqn_baseline --episodes 500 --resume runs/basic_dqn/latest.pt --headless
 
 Requires: pip install vizdoom torch numpy
 """
@@ -19,7 +19,7 @@ from torch import nn
 import torch.nn.functional as F
 import vizdoom as vzd
 
-# Button order matches basic.py: MOVE_LEFT, MOVE_RIGHT, ATTACK.
+# Button order matches cnn_research.exploration.basic: MOVE_LEFT, MOVE_RIGHT, ATTACK.
 ACTIONS = ([True, False, False], [False, True, False], [False, False, True])
 
 

@@ -2,9 +2,9 @@
 """Train and evaluate a ViZDoom CNN from label-guided teacher demonstrations.
 
 Examples:
-  python train_imitation_cnn.py --epochs 50
-  python train_imitation_cnn.py --eval --episodes 100 --headless
-  python train_imitation_cnn.py --eval --episodes 5
+  python -m cnn_research.training.train_imitation_cnn --epochs 50
+  python -m cnn_research.training.train_imitation_cnn --eval --episodes 100 --headless
+  python -m cnn_research.training.train_imitation_cnn --eval --episodes 5
 
 Input NPZ fields: frames (N,3,60,80) uint8, actions (N,),
 rewards (N,), action_tics (N,). Labels are NOT used by the CNN.
@@ -289,7 +289,7 @@ def main():
                     break
     print(f"Saved best imitation checkpoint: {best_path}")
     print(f"Training history: {history_path}")
-    print("Next: python train_imitation_cnn.py --eval --episodes 100 --headless")
+    print("Next: python -m cnn_research.training.train_imitation_cnn --eval --episodes 100 --headless")
 
 
 if __name__ == "__main__":

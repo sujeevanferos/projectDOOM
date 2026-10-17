@@ -6,9 +6,9 @@ Training samples ONLY receive random RGB brightness augmentation; validation
 samples remain unmodified. The original v1 checkpoint is never touched.
 
 Run:
- python train_imitation_cnn_brightness.py --epochs 50
+ python -m cnn_research.training.train_imitation_cnn_brightness --epochs 50
 Then evaluate with:
- python evaluate_brightness_robustness.py --checkpoint runs/imitation_cnn_brightness/best.pt --out-dir runs/brightness_robustness_v2 --episodes 100 --headless
+ python -m cnn_research.evaluation.evaluate_brightness_robustness --checkpoint runs/imitation_cnn_brightness/best.pt --out-dir runs/brightness_robustness_v2 --episodes 100 --headless
 """
 import argparse
 import csv
@@ -166,7 +166,7 @@ def main():
     metadata['best_val_loss'] = best_loss
     (args.out_dir / 'metadata.json').write_text(json.dumps(metadata, indent=2))
     print(f'Checkpoint: {best_path}\nHistory: {args.out_dir / "history.csv"}')
-    print('Evaluate with evaluate_brightness_robustness.py using a new --out-dir')
+    print('Evaluate with python -m cnn_research.evaluation.evaluate_brightness_robustness using a new --out-dir')
 
 
 if __name__ == '__main__':

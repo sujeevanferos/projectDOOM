@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Experiment 5B: visualize learned CNN features and action-specific Grad-CAM.
 
-Requires train_imitation_cnn.py in the same folder. Uses the ORIGINAL trained
+Imports cnn_research.training.train_imitation_cnn. Uses the ORIGINAL trained
 checkpoint; no training, labels, or weight updates are performed.
 
 Example:
- python experiment_5b_feature_visualization.py --episodes 12 --samples 9 --headless
+ python -m cnn_research.analysis.experiment_5b_feature_visualization --episodes 12 --samples 9 --headless
 """
 import argparse
 import csv
