@@ -1,0 +1,18 @@
+{
+  "experiment": "5B CNN feature visualization",
+  "checkpoint": "runs/imitation_cnn/best.pt",
+  "sha256": "fd419c1b0c2fc9034ffcda478df8828d2ea25a8443713775b030605dcb904a3a",
+  "checkpoint_epoch": 50,
+  "device": "cuda",
+  "episodes_started": 5,
+  "captured_frames": 9,
+  "games_killed_during_capture": 5,
+  "brightness_factors": [
+    1.0,
+    0.5
+  ],
+  "maps_per_layer": 8,
+  "labels_used": false,
+  "gradient_updates": 0,
+  "explanation": "Grad-CAM is a qualitative attribution, not proof of object detection. Gradients are computed for analysis only; model weights are not updated."
+}

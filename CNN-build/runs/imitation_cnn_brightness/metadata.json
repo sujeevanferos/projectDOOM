@@ -1,0 +1,31 @@
+{
+  "experiment": "5C brightness-augmented imitation CNN v2",
+  "created_utc": "2026-10-17T20:21:09.172303+00:00",
+  "source_script": "train_imitation_cnn.py",
+  "demo_dir": "runs/labelled_teacher/demos",
+  "episodes": 1000,
+  "train_episodes": 800,
+  "val_episodes": 200,
+  "train_samples": 4648,
+  "val_samples": 1133,
+  "augmentation": {
+    "training_only": true,
+    "type": "RGB multiplicative brightness",
+    "min": 0.5,
+    "max": 1.5,
+    "probability": 0.8
+  },
+  "validation_augmentation": false,
+  "seed": 42,
+  "device": "cuda",
+  "epochs_max": 50,
+  "batch_size": 64,
+  "lr": 0.0001,
+  "patience": 8,
+  "duration_weight": 0.4,
+  "architecture": "DoomImitationCNN_v1 (unchanged)",
+  "teacher_labels_supplied_to_CNN": false,
+  "note": "Uses same split procedure as CNN v1 with same seed and demonstration directory.",
+  "checkpoint_sha256": "19174b2eb81522552426aba19dec177752ec10bb0e077693e9548513a3280879",
+  "best_val_loss": 0.10571785919558971
+}

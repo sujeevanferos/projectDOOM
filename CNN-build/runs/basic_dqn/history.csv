@@ -1,0 +1,2 @@
+episode,steps,epsilon,train_reward,mean_td_loss,move_left,move_right,attack,eval_mean_reward
+1,50,1.0,-245.0,nan,18,15,17,

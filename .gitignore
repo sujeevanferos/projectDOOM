@@ -1,3 +1,69 @@
-CNN-build/runs/*
+# DOOM project — keep source scripts, documentation, and compact experiment summaries.
+# Place this file at the projectDoom/ repository root.
+
+# Python bytecode and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+.conda/
+.ipynb_checkpoints/
+
+# Machine-specific files, editor state, and secrets
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.env
+.env.*
+!.env.example
+*.log
+
+# Model checkpoints and serialized weights (large, regenerated artifacts)
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+
+# Demonstration data and bulk ML arrays
+*.npz
+*.npy
+*.h5
+*.hdf5
+
+# Large per-episode evaluation traces; keep summary.csv, history.csv,
+# metadata.json, predictions.csv, and compact comparison CSVs.
+CNN-build/runs/**/episodes.csv
+CNN-build/runs/**/evaluation.csv
+
+# Generated Grad-CAM / feature-map images, not source code
+CNN-build/runs/experiment_5b_features/*.png
+
+# ViZDoom runtime files, local binary, and configuration
 CNN-build/_vizdoom
-*.ini
+CNN-build/_vizdoom.ini
+
+# Generated media and captured gameplay recordings
+*.mp4
+*.avi
+*.mkv
+*.webm
+*.gif
+
+# Native ViZDoom / DOOM game assets (not normally redistributable)
+*.wad
+*.pk3
+*.pk7
+
+# Temporary files
+*.tmp
+*.bak
+*~

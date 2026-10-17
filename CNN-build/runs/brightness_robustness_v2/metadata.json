@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-17T20:32:33.537899+00:00",
+  "checkpoint": "runs/imitation_cnn_brightness/best.pt",
+  "checkpoint_sha256": "19174b2eb81522552426aba19dec177752ec10bb0e077693e9548513a3280879",
+  "checkpoint_epoch": 50,
+  "device": "cuda",
+  "episodes_per_condition": 100,
+  "brightness_multipliers": [
+    1.0,
+    0.5,
+    0.75,
+    1.25,
+    1.5
+  ],
+  "brightness_applied_to": "preprocessed RGB frames before CNN inference",
+  "label_buffer_used": false,
+  "gradient_updates": 0,
+  "paired_start_states": false,
+  "note": "Each condition uses new randomly generated episodes; comparisons are unpaired."
+}

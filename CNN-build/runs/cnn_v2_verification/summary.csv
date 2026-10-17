@@ -1,0 +1,4 @@
+brightness,episodes,kills,success_rate,wilson_low,wilson_high,mean_reward,median_reward,min_reward,max_reward,mean_decisions,median_decisions,move_left,move_right,attack,tics_2,tics_4,tics_8
+1.0,1000,1000,1.0,0.996173,1.0,76.131,77.0,-29.0,91.0,6.189,6.0,2092,1890,2207,2382,2208,1599
+0.5,1000,1000,1.0,0.996173,1.0,76.1,77.0,-62.0,91.0,6.204,6.0,1970,1808,2426,2493,2099,1612
+0.75,1000,1000,1.0,0.996173,1.0,75.685,77.0,-81.0,91.0,6.277,6.0,1987,2015,2275,2467,2175,1635

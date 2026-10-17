@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-10-17T05:59:42.338358+00:00",
+  "checkpoint": "runs/imitation_cnn/best.pt",
+  "checkpoint_epoch": 50,
+  "device": "cuda",
+  "episode_count": 1000,
+  "successes": 1000,
+  "success_rate": 1.0,
+  "success_rate_wilson_95": [
+    0.996173,
+    1.0
+  ],
+  "mean_reward": 74.842,
+  "median_reward": 75.0,
+  "min_reward": -29.0,
+  "max_reward": 91.0,
+  "mean_decisions": 6.371,
+  "median_decisions": 6.0,
+  "action_counts": {
+    "move_left": 2053,
+    "move_right": 1880,
+    "attack": 2438
+  },
+  "duration_counts": {
+    "tics_2": 2409,
+    "tics_4": 2294,
+    "tics_8": 1668
+  },
+  "label_buffer_used": false,
+  "gradient_updates": false
+}

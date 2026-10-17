@@ -95,8 +95,9 @@ def create_game(visible):
     game.set_episode_start_time(10)
     game.set_living_reward(-1)
     game.set_render_hud(False)
-    game.set_window_visible(False)
+    game.set_window_visible(visible)
     game.set_mode(vzd.Mode.PLAYER)
+    #game.set_labels_buffer_enabled(True)
     game.init()
     return game
 

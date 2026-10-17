@@ -1,0 +1,28 @@
+{
+  "experiment": "CNN v2 post-augmentation robustness verification",
+  "created_utc": "2026-10-17T20:40:34.364160+00:00",
+  "checkpoint": "runs/imitation_cnn_brightness/best.pt",
+  "checkpoint_sha256": "19174b2eb81522552426aba19dec177752ec10bb0e077693e9548513a3280879",
+  "checkpoint_epoch": 50,
+  "device": "cuda",
+  "conditions": [
+    {
+      "brightness": 1.0,
+      "episodes": 1000
+    },
+    {
+      "brightness": 0.5,
+      "episodes": 1000
+    },
+    {
+      "brightness": 0.75,
+      "episodes": 1000
+    }
+  ],
+  "brightness_applied_to": "CNN RGB input only; Doom game appearance unchanged",
+  "cnn_only": true,
+  "labels_used": false,
+  "gradient_updates": 0,
+  "paired_start_states": false,
+  "note": "Separate random game episodes by condition. Comparisons to prior CNN v1 runs are unpaired."
+}
