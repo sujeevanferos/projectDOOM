@@ -64,8 +64,7 @@ projectDOOM/
 │   │   ├── evaluation/           # Gameplay robustness, brightness, v2 verification
 │   │   └── analysis/             # Feature maps / Grad-CAM, summary comparison
 │   ├── tests/                    # Structural checks and optional runtime tests
-│   ├── DOOM_CNN_research_log.md  # Original chronological notes, preserved
-│   ├── docs/                     # Methodology, experiments, reproducibility, migration history
+│   ├── docs/                     # Research documentation; archive/ holds original log
 │   └── runs/                     # Historical CSV/JSON evidence at original paths
 └── SNN-build/
     └── README.md                 # Future research only
@@ -123,7 +122,7 @@ PyTorch-dependent CPU tests and full import/CLI help checks explicitly skip when
 - [Methodology and model architecture](CNN-build/docs/METHODOLOGY.md)
 - [Experiment chronology and measurements](CNN-build/docs/EXPERIMENTS.md)
 - [Reproduction and artifact management](CNN-build/docs/REPRODUCIBILITY.md)
-- [Legacy research log](CNN-build/DOOM_CNN_research_log.md)
+- [Legacy research log](CNN-build/docs/archive/DOOM_CNN_research_log.md)
 - [Structural migration guide and verification](CNN-build/docs/MIGRATION.md)
 
 The chronological research log is preserved as a historical record; its script names may refer to pre-migration paths. The migration guide records old-to-new mappings and structural verification. Methodology, experiments and reproducibility describe the current canonical package.
