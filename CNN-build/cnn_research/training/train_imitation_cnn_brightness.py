@@ -23,7 +23,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from train_imitation_cnn import (
+from cnn_research.training.train_imitation_cnn import (
     DoomImitationCNN, FrameDataset, load_demos, epoch_pass, TIC_CLASSES
 )
 

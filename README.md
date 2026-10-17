@@ -49,38 +49,75 @@ For the 1,000-trial verification conditions, the 95% Wilson interval for each ob
 
 Source data: `CNN-build/runs/labelled_teacher/metrics.csv`, `CNN-build/runs/imitation_cnn/history.csv`, `CNN-build/runs/imitation_cnn_brightness/history.csv`, and the committed brightness and verification `summary.csv` files.
 
-## Repository layout (before code reorganization)
+## Repository layout
 
 ```text
 projectDOOM/
 ├── README.md                     # Research overview
 ├── .gitignore
-└── CNN-build/
-    ├── *.py                      # Original training, evaluation and teacher scripts
-    ├── DOOM_CNN_research_log.md  # Earlier chronological notes
-    ├── docs/                     # Methodology, evidence and Codex handoff
-    └── runs/                     # Selected CSV/JSON summaries; large outputs ignored
+├── requirements.txt              # Imported dependencies; historical versions unknown
+├── CNN-build/
+│   ├── *.py                      # Compatible original script entry points
+│   ├── cnn_research/             # Original implementations, grouped by purpose
+│   │   ├── exploration/          # basic.py, doom_cnn.py, labelled_buffer_cnn.py
+│   │   ├── teacher/              # Calibration and both label-guided teachers
+│   │   ├── training/             # DQN baseline, imitation CNN v1 and v2
+│   │   ├── evaluation/           # Gameplay robustness, brightness, v2 verification
+│   │   └── analysis/             # Feature maps / Grad-CAM, summary comparison
+│   ├── tests/                    # Structural checks and optional runtime tests
+│   ├── DOOM_CNN_research_log.md  # Original chronological notes, preserved
+│   ├── docs/                     # Original research documents and migration guide
+│   └── runs/                     # Historical CSV/JSON evidence at original paths
+└── SNN-build/
+    └── README.md                 # Future research only
 ```
 
-Some historical paths contain the prefix `CNN-build/runs/`; scripts currently assume **the working directory is `CNN-build/`**. This repository is intentionally not yet reorganized, to preserve the scripts' original behavior.
+This is a **structural organization only**: existing functions, classes, model definitions, defaults and scientific behavior are preserved. Shared components and configurations have not been extracted. The canonical model, student preprocessing, environment setup and episode dataset remain together in `cnn_research.training.train_imitation_cnn`; the five downstream scripts import that module explicitly. SNN/FPGA work remains future research.
+
+Experiment commands still require **the working directory to be `CNN-build/`**. All relative inputs and outputs keep their original meaning. Original `python script.py ...` commands remain supported by wrappers; the new interface is `python -m cnn_research.<area>.<script> ...`. Use the module interface rather than directly executing files inside the package. See the [complete old-to-new mapping and inspection findings](CNN-build/docs/MIGRATION.md).
 
 ## Getting started
 
-Use a Linux environment with Python and ViZDoom, NumPy, PyTorch, and (for visualization) Matplotlib. Exact historical package versions are not pinned in this repository. ViZDoom must be able to locate its installed `basic.wad` scenario. The scripts support CUDA when available, and several support `--cpu`.
+Use an existing Linux environment with Python and the dependencies inventoried in [requirements.txt](requirements.txt): ViZDoom, NumPy, PyTorch, and Matplotlib. Exact historical package versions are unknown; this file is not an environment lock. Preserve your server's CUDA-compatible PyTorch installation. ViZDoom must locate its installed `basic.wad` scenario. CUDA selection and existing `--cpu` flags are unchanged. No libraries need to be installed for the repository moves themselves.
+
+The following commands use fresh output directories. Their arguments were checked against the preserved scripts; **training, gameplay, visualization and original-checkpoint loading were not executed during this organization** because their dependencies/artifacts are unavailable here. CLI help checks are included in the test suite for an environment with the full dependencies.
 
 ```bash
 cd CNN-build
-python labelled_aiming_agent_safe.py --episodes 1000 --headless --save-demos
-python train_imitation_cnn.py --epochs 50
-python train_imitation_cnn.py --eval --episodes 100 --headless
-python train_imitation_cnn_brightness.py --epochs 50
-python evaluate_brightness_robustness.py \
-  --checkpoint runs/imitation_cnn_brightness/best.pt \
+python -m cnn_research.teacher.labelled_aiming_agent_safe \
+  --episodes 1000 --headless --save-demos \
+  --out runs/labelled_teacher_new/metrics.csv --demo-dir runs/labelled_teacher_new/demos
+python -m cnn_research.training.train_imitation_cnn --epochs 50 \
+  --demo-dir runs/labelled_teacher_new/demos --out-dir runs/imitation_cnn_new
+python -m cnn_research.training.train_imitation_cnn --eval --episodes 100 --headless \
+  --checkpoint runs/imitation_cnn_new/best.pt --out-dir runs/imitation_eval_new
+python -m cnn_research.training.train_imitation_cnn_brightness --epochs 50 \
+  --demo-dir runs/labelled_teacher_new/demos --out-dir runs/imitation_cnn_brightness_new
+python -m cnn_research.evaluation.evaluate_brightness_robustness \
+  --checkpoint runs/imitation_cnn_brightness_new/best.pt \
   --out-dir runs/brightness_robustness_v2_new --episodes 100 --headless
-python verify_cnn_v2.py --headless --out-dir runs/cnn_v2_verification_new
+python -m cnn_research.analysis.experiment_5b_feature_visualization \
+  --checkpoint runs/imitation_cnn_new/best.pt --out-dir runs/experiment_5b_features_new \
+  --episodes 12 --samples 9 --brightness 1.0 0.5 --headless
+python -m cnn_research.evaluation.verify_cnn_v2 --headless \
+  --checkpoint runs/imitation_cnn_brightness_new/best.pt --out-dir runs/cnn_v2_verification_new
 ```
 
 **Do not rerun collection/training into existing results directories.** Several scripts explicitly refuse to overwrite saved outputs. Demonstration `.npz` files and trained `.pt` checkpoints are excluded from the Git repository, so a fresh clone cannot run evaluation without separately obtaining or recreating those artifacts. See [Reproducibility](CNN-build/docs/REPRODUCIBILITY.md).
+
+## Verification
+
+From the repository root, using the existing Python environment:
+
+```bash
+python -m unittest discover -s CNN-build/tests -v
+python -m compileall -q CNN-build
+git diff --check
+```
+
+The organization was checked on Python 3.14.2: **12 tests passed, 10 skipped**. Source-preservation hashes cover all 14 implementations (allowing only six import statements to change), and every existing research document and CSV/JSON evidence file under `CNN-build/`. Available tests also cover preprocessing, action/duration mappings, teacher thresholds, defaults, the original episode split against the committed manifest, and both summary-comparison CLI interfaces. The comparison reproduced the committed table into a temporary directory.
+
+PyTorch-dependent CPU tests and full import/CLI help checks explicitly skip when their dependencies are missing. CPU tests include output shapes, RGB normalization, brightness transforms, and a strict load from synthetic weights created using the original model definition. These do not substitute for restoring original trained checkpoints. Real gameplay and original checkpoint tests require explicit opt-ins; see [verification details](CNN-build/docs/MIGRATION.md#verification-and-remaining-checks). No experiments were rerun and no trained artifacts were generated.
 
 ## Documentation
 
@@ -89,6 +126,9 @@ python verify_cnn_v2.py --headless --out-dir runs/cnn_v2_verification_new
 - [Reproduction and artifact management](CNN-build/docs/REPRODUCIBILITY.md)
 - [Codex organization handoff](CNN-build/docs/CODEX_HANDOFF.md)
 - [Legacy research log](CNN-build/DOOM_CNN_research_log.md)
+- [Structural migration guide and verification](CNN-build/docs/MIGRATION.md)
+
+The five original research documents above remain unchanged as historical records. Their flat-layout descriptions and proposed refactoring steps describe the pre-migration repository; the migration guide gives the current paths and records discrepancies without editing the academic evidence.
 
 ## Limitations and planned work
 

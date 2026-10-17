@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import vizdoom as vzd
-from train_imitation_cnn import DoomImitationCNN, ACTIONS, TIC_CLASSES, create_game, preprocess
+from cnn_research.training.train_imitation_cnn import DoomImitationCNN, ACTIONS, TIC_CLASSES, create_game, preprocess
 
 
 def wilson(successes, n):

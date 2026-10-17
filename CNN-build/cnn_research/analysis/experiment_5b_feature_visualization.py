@@ -20,7 +20,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from train_imitation_cnn import DoomImitationCNN, TIC_CLASSES, ACTIONS, ACTION_NAMES, create_game, preprocess
+from cnn_research.training.train_imitation_cnn import DoomImitationCNN, TIC_CLASSES, ACTIONS, ACTION_NAMES, create_game, preprocess
 
 CONV_LAYERS = (("conv1", 0), ("conv2", 3), ("conv3", 6))
 

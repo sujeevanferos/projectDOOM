@@ -21,8 +21,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from train_imitation_cnn import DoomImitationCNN
-from evaluate_brightness_robustness import evaluate_condition, wilson, checksum
+from cnn_research.training.train_imitation_cnn import DoomImitationCNN
+from cnn_research.evaluation.evaluate_brightness_robustness import evaluate_condition, wilson, checksum
 
 
 def summarize(rows, brightness):

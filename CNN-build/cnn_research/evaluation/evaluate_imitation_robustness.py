@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from train_imitation_cnn import DoomImitationCNN, evaluate
+from cnn_research.training.train_imitation_cnn import DoomImitationCNN, evaluate
 
 
 def wilson_interval(successes, n, z=1.95996398454):

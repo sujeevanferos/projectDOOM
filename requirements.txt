@@ -1,0 +1,7 @@
+# Actual third-party imports. Historical versions were not recorded; this is
+# a dependency inventory, not a claim to reproduce the original environment.
+# For a Linux CUDA server, install the appropriate PyTorch CUDA build first.
+numpy
+torch
+vizdoom
+matplotlib
