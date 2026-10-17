@@ -25,7 +25,7 @@ This project investigates visual decision-making in the ViZDoom `basic.wad` envi
 | Experiment 5A: brightness stress test | Completed | `CNN-build/cnn_research/evaluation/evaluate_brightness_robustness.py` |
 | Experiment 5B: feature maps and Grad-CAM | Exploratory analysis completed | `CNN-build/cnn_research/analysis/experiment_5b_feature_visualization.py` |
 | Experiment 5C: augmented CNN v2 | Trained, evaluated, and independently verified | `CNN-build/cnn_research/training/train_imitation_cnn_brightness.py`, `CNN-build/cnn_research/evaluation/verify_cnn_v2.py` |
-| Recurrent SNN proof of concept | Implemented in a separately maintained submodule; training and evaluation remain exploratory | [`SNN-build/`](SNN-build/) and [team member's source repository](https://github.com/DakshayaniRamanesh/project_DOOM) |
+| Recurrent SNN proof of concept | Implemented in a separately maintained submodule; training and evaluation remain exploratory | [`SNN-build/`](SNN-build/) and [source repository](https://github.com/DakshayaniRamanesh/project_DOOM) |
 | FPGA deployment | Future research; not implemented or validated | No fixed-point synthesis, timing, power or resource measurements reported |
 
 ## Method overview
