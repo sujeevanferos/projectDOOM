@@ -1,0 +1,116 @@
+{
+  "baseline_commit": "645c0ce4a023240b3776b0e78e7b0a41c0e011a5",
+  "import_moves": {
+    "train_imitation_cnn": "cnn_research.training.train_imitation_cnn",
+    "evaluate_brightness_robustness": "cnn_research.evaluation.evaluate_brightness_robustness"
+  },
+  "scripts": [
+    {
+      "old": "CNN-build/basic.py",
+      "new": "CNN-build/cnn_research/exploration/basic.py",
+      "module": "cnn_research.exploration.basic",
+      "sha256": "8e494e70e2a1c799e2c7cf21a705bc84e249767e47ade3adc1040106f80e95f4"
+    },
+    {
+      "old": "CNN-build/doom_cnn.py",
+      "new": "CNN-build/cnn_research/exploration/doom_cnn.py",
+      "module": "cnn_research.exploration.doom_cnn",
+      "sha256": "a2bd1675b755e39d38300b5e5ef0f3416b5b3b71d481384acd7a340cb02e826b"
+    },
+    {
+      "old": "CNN-build/labelled_buffer_cnn.py",
+      "new": "CNN-build/cnn_research/exploration/labelled_buffer_cnn.py",
+      "module": "cnn_research.exploration.labelled_buffer_cnn",
+      "sha256": "e352618a9b84e8fe8949d88274517d3dc249e562c2862bc2b65e7c5aa87efd6c"
+    },
+    {
+      "old": "CNN-build/calibrate_aiming.py",
+      "new": "CNN-build/cnn_research/teacher/calibrate_aiming.py",
+      "module": "cnn_research.teacher.calibrate_aiming",
+      "sha256": "8735ca0ff29ee40ac0aa053bcce09c5df8d983a550a586cb5e73949d2b6c1c0c"
+    },
+    {
+      "old": "CNN-build/labelled_aiming_agent.py",
+      "new": "CNN-build/cnn_research/teacher/labelled_aiming_agent.py",
+      "module": "cnn_research.teacher.labelled_aiming_agent",
+      "sha256": "30257bdd3288e96f3fb5bc26a31dc446c45fed144babca739630ad0027a67ea4"
+    },
+    {
+      "old": "CNN-build/labelled_aiming_agent_safe.py",
+      "new": "CNN-build/cnn_research/teacher/labelled_aiming_agent_safe.py",
+      "module": "cnn_research.teacher.labelled_aiming_agent_safe",
+      "sha256": "a56ae8543fbe973e5f8a1527caa4f219a84e30796a28766fc11576ff03372185"
+    },
+    {
+      "old": "CNN-build/doom_dqn_baseline.py",
+      "new": "CNN-build/cnn_research/training/doom_dqn_baseline.py",
+      "module": "cnn_research.training.doom_dqn_baseline",
+      "sha256": "1908bb07da39874e25b00a0ce686c5ca71a643d2aec6677a439ebd22a4bee2ca"
+    },
+    {
+      "old": "CNN-build/train_imitation_cnn.py",
+      "new": "CNN-build/cnn_research/training/train_imitation_cnn.py",
+      "module": "cnn_research.training.train_imitation_cnn",
+      "sha256": "f2481b1bb45caf18ace9f45bb282f54f51380f31ad23289fd7527e9aea380c20"
+    },
+    {
+      "old": "CNN-build/train_imitation_cnn_brightness.py",
+      "new": "CNN-build/cnn_research/training/train_imitation_cnn_brightness.py",
+      "module": "cnn_research.training.train_imitation_cnn_brightness",
+      "sha256": "754d3bdf8622a4022855ed92b11d2a4ed7390a4ec1fa62e228560620c93b7686"
+    },
+    {
+      "old": "CNN-build/evaluate_imitation_robustness.py",
+      "new": "CNN-build/cnn_research/evaluation/evaluate_imitation_robustness.py",
+      "module": "cnn_research.evaluation.evaluate_imitation_robustness",
+      "sha256": "dbbc74aadf16da71ba2adeda2b4914bbabada947aa4e1d7e8b12cff80a97956b"
+    },
+    {
+      "old": "CNN-build/evaluate_brightness_robustness.py",
+      "new": "CNN-build/cnn_research/evaluation/evaluate_brightness_robustness.py",
+      "module": "cnn_research.evaluation.evaluate_brightness_robustness",
+      "sha256": "9ea4fb2204867274ef914ea1235cc0bdd66c2518562bff4a5c2f445cc86f9708"
+    },
+    {
+      "old": "CNN-build/verify_cnn_v2.py",
+      "new": "CNN-build/cnn_research/evaluation/verify_cnn_v2.py",
+      "module": "cnn_research.evaluation.verify_cnn_v2",
+      "sha256": "d951a5a1b9af02a13d6ccab4843868f0d3c9875e0d5403191b82dc008faf6ebf"
+    },
+    {
+      "old": "CNN-build/experiment_5b_feature_visualization.py",
+      "new": "CNN-build/cnn_research/analysis/experiment_5b_feature_visualization.py",
+      "module": "cnn_research.analysis.experiment_5b_feature_visualization",
+      "sha256": "560f80b60f48a357b381ae1d5fd71730a2bb6030df62203fae9dc5068236ae78"
+    },
+    {
+      "old": "CNN-build/compare_brightness_models.py",
+      "new": "CNN-build/cnn_research/analysis/compare_brightness_models.py",
+      "module": "cnn_research.analysis.compare_brightness_models",
+      "sha256": "287eb1ef64a0eb34773bef3ab5ce9cc23b45d76bb66017e78c4ff54c613d08fa"
+    }
+  ],
+  "protected_files": {
+    "CNN-build/DOOM_CNN_research_log.md": "c523afa372e045d8c3b2ac6b59f6cc589abd975808510975e46b68b3693142f7",
+    "CNN-build/docs/CODEX_HANDOFF.md": "38c68e5e6068694e964cce2f763e79aeaf08571a48434e5e8a13ea98363d475f",
+    "CNN-build/docs/EXPERIMENTS.md": "4653e6d6125cbba7b27282ae9059ac830943e91d53fec7ffcf148c0e0f19e012",
+    "CNN-build/docs/METHODOLOGY.md": "01d856fa9854c9d82e910bf53b7cf7502de70d4da62cb71b0cf6ee09802a817e",
+    "CNN-build/docs/REPRODUCIBILITY.md": "3ba785d87d149d9b358808b642cb83b13860a6dcf5f410cd617181bca850bb0c",
+    "CNN-build/runs/basic_dqn/history.csv": "ecd6e50fff31a045810d2a169f635108cd06f7bc1603d0bffb6b561233772d72",
+    "CNN-build/runs/brightness_comparison_v1_vs_v2.csv": "1c16e2feea436a0630b960e21ceb7f2bbd5950dee8c3c9ae208854d7df6b157b",
+    "CNN-build/runs/brightness_robustness/metadata.json": "44d828281136f50ed451b0338a52d05ecc8962adf04cb917d4d099a8db925a99",
+    "CNN-build/runs/brightness_robustness/summary.csv": "bcf99ada829a98926e9b57106b64be057cf9dcb57f46c0d6a41da3ab4cec9ae0",
+    "CNN-build/runs/brightness_robustness_v2/metadata.json": "37ef0b72fcc4c6e69c96f2b49cab44242ff915f4f69a729006a7917bc1ffe590",
+    "CNN-build/runs/brightness_robustness_v2/summary.csv": "24c88864d63e82bead031c8d7ef71739cd6fe7e4f42b81a26518c74ec691acb8",
+    "CNN-build/runs/cnn_v2_verification/metadata.json": "26bc56567b775eed449f9ffe12935d69e3c8bb1de09b67c1219ad21eba22ffb5",
+    "CNN-build/runs/cnn_v2_verification/summary.csv": "b0179d7e4fd4e5dca2a2f0fe4d8cd71dd0b64483ff007398be94447bce36bb9e",
+    "CNN-build/runs/experiment_5b_features/metadata.json": "5a01d310946a28bf5f31434a1d2a823b2f00c9c08f1783b7db50cd08ee8f63aa",
+    "CNN-build/runs/experiment_5b_features/predictions.csv": "931b6ce017038acc8e9ab0a143b347803c3f8bb7684ef6c17980c9c761a15f6e",
+    "CNN-build/runs/imitation_cnn/history.csv": "c11f581249d38d979c9e1ed6773e099b0b6482cde69934cf4014c0fc7057bfe2",
+    "CNN-build/runs/imitation_cnn_brightness/history.csv": "7cf9cfb387a8b997be98ebd066ab0e267c7535562635498e36a1e45b27e5a3d1",
+    "CNN-build/runs/imitation_cnn_brightness/metadata.json": "ffec8f590c24dffc1e189f33f86316c1bbaaa45f79c0e3197ddd558d37b92df5",
+    "CNN-build/runs/imitation_cnn_brightness/split_manifest.json": "9b972730b1302a60b4b7d61f10507b29f7023193a7724416e974dac7d88271fc",
+    "CNN-build/runs/imitation_robustness_1000/summary.json": "1e9553eee1f9e56aad82bfde3fa1a36e9a141fd338a9bb909451baff6093fb29",
+    "CNN-build/runs/labelled_teacher/metrics.csv": "a8d594da99fe33962913ffee6fc5c9f9f7f8edc7ce468ed587c4ae007b8452f6"
+  }
+}

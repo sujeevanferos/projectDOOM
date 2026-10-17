@@ -46,6 +46,7 @@ CNN-build/runs/**/evaluation.csv
 
 # Generated Grad-CAM / feature-map images, not source code
 CNN-build/runs/experiment_5b_features/*.png
+CNN-build/runs/**/*.png
 
 # ViZDoom runtime files, local binary, and configuration
 CNN-build/_vizdoom
