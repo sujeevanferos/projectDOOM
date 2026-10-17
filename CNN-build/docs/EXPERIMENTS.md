@@ -1,5 +1,7 @@
 # Experimental record and evidence ledger
 
+**Source mapping:** Short filenames in the timeline identify experiments, not executable root-level scripts. All canonical implementations reside in `CNN-build/cnn_research/`; see [the module mapping](MIGRATION.md#commands-and-imports). This record distinguishes committed artifacts from claims that require unavailable checkpoints or datasets.
+
 **Evidence policy:** The figures below are transcribed from committed CSV/JSON summaries where available, or identified as previously reported measurements. A closed-loop success rate is distinct from supervised action accuracy. We use `basic.wad` unless explicitly noted.
 
 ## Timeline

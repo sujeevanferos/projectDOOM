@@ -1,3 +1,5 @@
+> **Archived historical record.** This log preserves the original research chronology and contemporaneous notes. Script names and proposed next steps reflect the time of writing and may be superseded. For current commands and findings, see [Reproducibility](../REPRODUCIBILITY.md), [Methodology](../METHODOLOGY.md), and [Experiments](../EXPERIMENTS.md).
+
 # ViZDoom CNN research log
 
 ## Research goal

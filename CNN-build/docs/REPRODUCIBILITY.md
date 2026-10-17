@@ -2,7 +2,7 @@
 
 ## Execution assumptions
 
-Current scripts are **standalone files under `CNN-build/`** and import one another using unqualified Python imports. Until code is refactored, run all documented commands after `cd CNN-build`. A compatible environment requires Python, PyTorch, NumPy, ViZDoom (including the installed `basic.wad` asset), and Matplotlib for image/Grad-CAM plots. Exact library versions are **not locked** in the current repository; record them when rerunning.
+Current implementations live under the `CNN-build/cnn_research/` package. The historical standalone entry-point files have been removed. Run commands after `cd CNN-build` using `python -m cnn_research.<area>.<module>` so package imports resolve correctly. A compatible environment requires Python, PyTorch, NumPy, ViZDoom (including the installed `basic.wad` asset), and Matplotlib for image/Grad-CAM plots. Exact library versions are **not locked** in the current repository; record them when rerunning.
 
 Examples for a server environment:
 
@@ -12,42 +12,42 @@ python -c "import torch, numpy, vizdoom; print(torch.__version__, numpy.__versio
 python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
 ```
 
-## Proposed workflow (use unique output directories)
+## Reproduction workflow (use unique output directories)
 
 From `CNN-build/`:
 
 ```bash
 # 1. Build successful teacher demonstrations
-python labelled_aiming_agent_safe.py --episodes 1000 --headless --save-demos \
+python -m cnn_research.teacher.labelled_aiming_agent_safe --episodes 1000 --headless --save-demos \
   --out runs/labelled_teacher_new/metrics.csv \
   --demo-dir runs/labelled_teacher_new/demos
 
 # 2. Train original architecture with unaugmented examples
-python train_imitation_cnn.py \
+python -m cnn_research.training.train_imitation_cnn \
   --demo-dir runs/labelled_teacher_new/demos \
   --out-dir runs/imitation_cnn_new --epochs 50
 
 # 3. Test CNN v1 with no label access
-python train_imitation_cnn.py --eval --headless --episodes 100 \
+python -m cnn_research.training.train_imitation_cnn --eval --headless --episodes 100 \
   --checkpoint runs/imitation_cnn_new/best.pt \
   --out-dir runs/imitation_eval_new
 
 # 4. Brightness stress test for CNN v1
-python evaluate_brightness_robustness.py --headless --episodes 100 \
+python -m cnn_research.evaluation.evaluate_brightness_robustness --headless --episodes 100 \
   --checkpoint runs/imitation_cnn_new/best.pt \
   --out-dir runs/brightness_robustness_new
 
 # 5. Train CNN v2 with the same demonstration source
-python train_imitation_cnn_brightness.py --epochs 50 \
+python -m cnn_research.training.train_imitation_cnn_brightness --epochs 50 \
   --demo-dir runs/labelled_teacher_new/demos \
   --out-dir runs/imitation_cnn_brightness_new
 
 # 6. Evaluate and verify CNN v2
-python evaluate_brightness_robustness.py --headless --episodes 100 \
+python -m cnn_research.evaluation.evaluate_brightness_robustness --headless --episodes 100 \
   --checkpoint runs/imitation_cnn_brightness_new/best.pt \
   --out-dir runs/brightness_robustness_v2_new
 
-python verify_cnn_v2.py --headless \
+python -m cnn_research.evaluation.verify_cnn_v2 --headless \
   --checkpoint runs/imitation_cnn_brightness_new/best.pt \
   --out-dir runs/cnn_v2_verification_new
 ```
@@ -57,7 +57,7 @@ python verify_cnn_v2.py --headless \
 ## Feature visualization
 
 ```bash
-python experiment_5b_feature_visualization.py \
+python -m cnn_research.analysis.experiment_5b_feature_visualization \
   --checkpoint runs/imitation_cnn_new/best.pt \
   --out-dir runs/experiment_5b_features_new \
   --episodes 12 --samples 9 --brightness 1.0 0.5 --headless
@@ -76,7 +76,7 @@ Visualization is diagnostic. Saving only figures without frame IDs and brightnes
 | `runs/**/summary.csv`, `history.csv`, metadata | Aggregate evidence | Commit when small and free of sensitive data |
 | `runs/**/episodes.csv`, plotted PNGs | Large per-episode/visual outputs | Usually excluded from Git |
 
-The repository currently contains *selected* summary data, not a complete self-contained release. `.gitignore` prevents newly added matching files from being staged but does not remove already tracked files.
+The repository contains *selected* historical summary data, not a complete self-contained reproducibility package. Checkpoints and teacher demonstrations must be restored from trusted archival storage or regenerated with appropriate compute resources; the commands below are instructions, not evidence that a new run has been performed. `.gitignore` prevents newly added matching files from being staged but does not remove already tracked files.
 
 ## Minimum run manifest
 
@@ -91,4 +91,4 @@ Ensure `KILLCOUNT` is explicitly recorded separately from total reward. Do not d
 - Keep the episode-level split, and store the split manifest for CNN v2.
 - Explain which data and model artifacts are missing from Git and how to restore them.
 - For matched-condition comparisons, implement and verify reproducible start-state pairing rather than assuming it from a shared random seed.
-- After refactoring, execute smoke tests for imports, preprocessing shape, a synthetic model forward pass, teacher collection, evaluation and CSV schemas.
+- Before scientific reuse, validate imports, preprocessing shape, a synthetic model forward pass, teacher collection, evaluation and CSV schemas in a configured environment. A documentation change does not constitute an experimental replication.

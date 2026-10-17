@@ -18,12 +18,12 @@ This project investigates visual decision-making in the ViZDoom `basic.wad` envi
 
 | Component | Status | Evidence |
 | --- | --- | --- |
-| DQN baseline | Investigated; unsatisfactory control in reported tests | `CNN-build/doom_dqn_baseline.py` |
-| Label-guided aiming teacher | Completed | `CNN-build/labelled_aiming_agent_safe.py` |
-| RGB imitation CNN v1 | Trained and evaluated | `CNN-build/train_imitation_cnn.py` |
-| Experiment 5A: brightness stress test | Completed | `CNN-build/evaluate_brightness_robustness.py` |
-| Experiment 5B: feature maps and Grad-CAM | Exploratory analysis completed | `CNN-build/experiment_5b_feature_visualization.py` |
-| Experiment 5C: augmented CNN v2 | Trained, evaluated, and independently verified | `CNN-build/train_imitation_cnn_brightness.py`, `CNN-build/verify_cnn_v2.py` |
+| DQN baseline | Investigated; unsatisfactory control in reported tests | `CNN-build/cnn_research/training/doom_dqn_baseline.py` |
+| Label-guided aiming teacher | Completed | `CNN-build/cnn_research/teacher/labelled_aiming_agent_safe.py` |
+| RGB imitation CNN v1 | Trained and evaluated | `CNN-build/cnn_research/training/train_imitation_cnn.py` |
+| Experiment 5A: brightness stress test | Completed | `CNN-build/cnn_research/evaluation/evaluate_brightness_robustness.py` |
+| Experiment 5B: feature maps and Grad-CAM | Exploratory analysis completed | `CNN-build/cnn_research/analysis/experiment_5b_feature_visualization.py` |
+| Experiment 5C: augmented CNN v2 | Trained, evaluated, and independently verified | `CNN-build/cnn_research/training/train_imitation_cnn_brightness.py`, `CNN-build/cnn_research/evaluation/verify_cnn_v2.py` |
 | SNN implementation and FPGA deployment | Future research | Not represented as a completed result |
 
 ## Method overview
@@ -57,7 +57,6 @@ projectDOOM/
 ├── .gitignore
 ├── requirements.txt              # Imported dependencies; historical versions unknown
 ├── CNN-build/
-│   ├── *.py                      # Compatible original script entry points
 │   ├── cnn_research/             # Original implementations, grouped by purpose
 │   │   ├── exploration/          # basic.py, doom_cnn.py, labelled_buffer_cnn.py
 │   │   ├── teacher/              # Calibration and both label-guided teachers
@@ -65,8 +64,7 @@ projectDOOM/
 │   │   ├── evaluation/           # Gameplay robustness, brightness, v2 verification
 │   │   └── analysis/             # Feature maps / Grad-CAM, summary comparison
 │   ├── tests/                    # Structural checks and optional runtime tests
-│   ├── DOOM_CNN_research_log.md  # Original chronological notes, preserved
-│   ├── docs/                     # Original research documents and migration guide
+│   ├── docs/                     # Research documentation; archive/ holds original log
 │   └── runs/                     # Historical CSV/JSON evidence at original paths
 └── SNN-build/
     └── README.md                 # Future research only
@@ -74,7 +72,7 @@ projectDOOM/
 
 This is a **structural organization only**: existing functions, classes, model definitions, defaults and scientific behavior are preserved. Shared components and configurations have not been extracted. The canonical model, student preprocessing, environment setup and episode dataset remain together in `cnn_research.training.train_imitation_cnn`; the five downstream scripts import that module explicitly. SNN/FPGA work remains future research.
 
-Experiment commands still require **the working directory to be `CNN-build/`**. All relative inputs and outputs keep their original meaning. Original `python script.py ...` commands remain supported by wrappers; the new interface is `python -m cnn_research.<area>.<script> ...`. Use the module interface rather than directly executing files inside the package. See the [complete old-to-new mapping and inspection findings](CNN-build/docs/MIGRATION.md).
+Experiment commands still require **the working directory to be `CNN-build/`**. All relative inputs and outputs keep their original meaning. Legacy `python script.py ...` invocations are no longer supported; use `python -m cnn_research.<area>.<script> ...`. Use the module interface rather than directly executing files inside the package. See the [complete old-to-new mapping and inspection findings](CNN-build/docs/MIGRATION.md).
 
 ## Getting started
 
@@ -115,7 +113,7 @@ python -m compileall -q CNN-build
 git diff --check
 ```
 
-The organization was checked on Python 3.14.2: **12 tests passed, 10 skipped**. Source-preservation hashes cover all 14 implementations (allowing only six import statements to change), and every existing research document and CSV/JSON evidence file under `CNN-build/`. Available tests also cover preprocessing, action/duration mappings, teacher thresholds, defaults, the original episode split against the committed manifest, and both summary-comparison CLI interfaces. The comparison reproduced the committed table into a temporary directory.
+The organization was checked on Python 3.14.2: **12 tests passed, 10 skipped** (earlier structural migration; not a fresh test run for the current branch). Source-preservation hashes cover all 14 implementations (allowing only six import statements to change), and every existing research document and CSV/JSON evidence file under `CNN-build/`. Available tests also cover preprocessing, action/duration mappings, teacher thresholds, defaults, the original episode split against the committed manifest, and both summary-comparison CLI interfaces. The comparison reproduced the committed table into a temporary directory.
 
 PyTorch-dependent CPU tests and full import/CLI help checks explicitly skip when their dependencies are missing. CPU tests include output shapes, RGB normalization, brightness transforms, and a strict load from synthetic weights created using the original model definition. These do not substitute for restoring original trained checkpoints. Real gameplay and original checkpoint tests require explicit opt-ins; see [verification details](CNN-build/docs/MIGRATION.md#verification-and-remaining-checks). No experiments were rerun and no trained artifacts were generated.
 
@@ -124,11 +122,10 @@ PyTorch-dependent CPU tests and full import/CLI help checks explicitly skip when
 - [Methodology and model architecture](CNN-build/docs/METHODOLOGY.md)
 - [Experiment chronology and measurements](CNN-build/docs/EXPERIMENTS.md)
 - [Reproduction and artifact management](CNN-build/docs/REPRODUCIBILITY.md)
-- [Codex organization handoff](CNN-build/docs/CODEX_HANDOFF.md)
-- [Legacy research log](CNN-build/DOOM_CNN_research_log.md)
+- [Legacy research log](CNN-build/docs/archive/DOOM_CNN_research_log.md)
 - [Structural migration guide and verification](CNN-build/docs/MIGRATION.md)
 
-The five original research documents above remain unchanged as historical records. Their flat-layout descriptions and proposed refactoring steps describe the pre-migration repository; the migration guide gives the current paths and records discrepancies without editing the academic evidence.
+The chronological research log is preserved as a historical record; its script names may refer to pre-migration paths. The migration guide records old-to-new mappings and structural verification. Methodology, experiments and reproducibility describe the current canonical package.
 
 ## Limitations and planned work
 

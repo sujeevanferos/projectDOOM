@@ -1,5 +1,7 @@
 # Methodology: ViZDoom visual imitation learning
 
+**Code organization:** Canonical implementations are Python modules in `CNN-build/cnn_research/`. Historical short script names in this document refer to those modules; see [the migration mapping](MIGRATION.md#commands-and-imports). This methodology records the reported research design, not an independent rerun.
+
 ## Experimental environment and observation pipeline
 
 The current completed CNN studies use the ViZDoom `basic.wad` scenario and `map01`. Scripts configure an RGB24 screen at 160 × 120, an episode timeout of 200 tics, start time 10, and living reward −1. Actions are `MOVE_LEFT`, `MOVE_RIGHT`, and `ATTACK`. The RGB screen is subsampled by a factor of two on each spatial dimension, yielding `uint8` training arrays of shape `(3, 60, 80)`; the student normalizes these to [0, 1].
