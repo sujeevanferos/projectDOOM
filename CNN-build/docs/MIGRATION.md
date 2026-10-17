@@ -1,9 +1,10 @@
 # Structural migration guide
 
-This phase moves existing scripts into a small Python package and retains their
-original entry points. It does not extract or rewrite functions, consolidate
-algorithms, introduce new configurations, or rerun experiments. Stage 2 code
-refactoring requires explicit authorization.
+The original structural migration moved scripts into a small Python package.
+The subsequent cleanup removes all 14 verified forwarding-only compatibility
+wrappers from `CNN-build/`. Each script now has one canonical source location
+under `cnn_research/`. No research functions, classes, algorithms, settings or
+results are rewritten. Stage 2 code refactoring remains deferred.
 
 Baseline: commit `645c0ce4a023240b3776b0e78e7b0a41c0e011a5`. All research
 documents, historical results and artifact paths under `CNN-build/` are preserved.
@@ -11,11 +12,11 @@ The new `SNN-build/README.md` reserves future work; it contains no implementatio
 
 ## Commands and imports
 
-Continue to run experiments after `cd CNN-build`. Each old invocation remains
-valid with the same arguments. In the table, replace `python OLD.py` with
-`python -m MODULE`; append the exact same CLI arguments.
+Continue to run experiments after `cd CNN-build`. Old wrapper invocations and
+unqualified imports are no longer supported. In the table, replace
+`python OLD.py` with `python -m MODULE`; append the same CLI arguments.
 
-| Old script | New module / source location |
+| Removed wrapper in `CNN-build/` | Canonical module / source location |
 | --- | --- |
 | `basic.py` | `cnn_research.exploration.basic` |
 | `doom_cnn.py` | `cnn_research.exploration.doom_cnn` |
@@ -43,15 +44,14 @@ provides the package import context. The package is intentionally local to
 `CNN-build/`; it is not installed globally and does not change the working
 directory. Running from the repository root requires first entering `CNN-build/`.
 
-Original function/class names and constants remain available through the legacy
-wrappers, for example `from train_imitation_cnn import DoomImitationCNN`.
-New callers can use the explicit package import
+Replace the former `from train_imitation_cnn import DoomImitationCNN` import with
 `from cnn_research.training.train_imitation_cnn import DoomImitationCNN`.
-Definitions live in the package now; internal imports use that location directly.
-Code relying on a definition's `__module__`, source inspection through wrappers,
-or monkeypatching a wrapper's globals should target the implementation module.
-Source filenames embedded in original docstrings, CLI messages and metadata are
-retained, and refer to working legacy entry points.
+Function/class names and constants are unchanged. Internal imports already use
+the package location. Source inspection and monkeypatching must target that
+implementation module. Current examples and CLI hints use canonical module
+commands. The brightness evaluator's existing working-directory guard now checks
+`cnn_research/training/train_imitation_cnn.py`, preserving the `CNN-build/` working
+directory requirement without relying on a removed wrapper.
 
 ## Responsibilities and dependencies
 
@@ -61,7 +61,7 @@ retained, and refer to working legacy entry points.
   The safe collector is the documented demonstration entry point.
 - `training/`: preserves the reward-driven baseline and the two imitation
   trainers. Model, student environment setup, preprocessing, demonstration loading,
-  losses and `FrameDataset` remain inside `train_imitation_cnn.py`.
+  losses and `FrameDataset` remain inside `training/train_imitation_cnn.py`.
 - `evaluation/`: closed-loop robustness, 5A brightness evaluation and the later
   frozen v2 verification. Their metrics and output schemas are unchanged.
 - `analysis/`: 5B features/Grad-CAM and comparison of existing summary tables.
@@ -70,10 +70,12 @@ retained, and refer to working legacy entry points.
 
 The v2 trainer, two robustness evaluators, verification and feature visualization
 import the canonical imitation module. Verification additionally imports the
-brightness evaluator. Only these six `from ... import ...` statements changed in
-the moved source. No shared environment/model/configuration modules were created.
+brightness evaluator. The first migration changed six `from ... import ...`
+statements. Wrapper cleanup changes only executable example text, CLI hints,
+source-location comments and the evaluator's working-directory path/error text.
+No shared environment/model/configuration modules were created.
 Duplicate teacher, preprocessing and DQN code intentionally remains until Stage 2.
-The package name avoids collision with the exploratory `doom_cnn.py` entry point.
+The exploratory network remains in `cnn_research.exploration.doom_cnn`.
 
 ## Inspection findings retained without scientific changes
 
@@ -98,9 +100,40 @@ The package name avoids collision with the exploratory `doom_cnn.py` entry point
    per-episode rows or multi-brightness condition table. The original document
    is preserved; this finding records the discrepancy separately.
 6. The original reproducibility and handoff documents describe the flat layout
-   and propose extraction. Their legacy commands still work through wrappers;
-   extraction is deferred. Existing script-level configuration defaults remain
-   authoritative. No new experiment configuration files were introduced.
+   and propose extraction. Translate their historical commands using the table
+   above; extraction is deferred. Existing script-level configuration defaults
+   remain authoritative. No experiment configuration files were introduced.
+
+## Legacy-reference audit
+
+Before deletion, static inspection verified that every root-level Python file
+contained only a compatibility docstring, imports/re-exports, and a guarded
+forwarding call (`main`, `run(parse_args())`, or `runpy.run_module`). Each matching
+package implementation exists. None of the deleted files contained a function,
+class, model, configuration assignment, or research algorithm.
+
+Active references occurred in the README, this guide, structural/runtime tests,
+script docstrings, CLI hints and the brightness evaluator's path guard. Those
+references now use canonical locations. Production imports already used the
+package and required no changes. Tests now check that root wrappers are absent,
+package consumers share the canonical model, and help commands use modules only.
+
+The following legacy identifiers are intentionally retained as evidence:
+
+- `DOOM_CNN_research_log.md` and `docs/{CODEX_HANDOFF,EXPERIMENTS,METHODOLOGY,REPRODUCIBILITY}.md`
+  retain their historical script names and commands unchanged.
+- `runs/imitation_cnn_brightness/metadata.json` and the trainer's matching
+  `source_script` metadata value retain `train_imitation_cnn.py` as a provenance
+  identifier. It is not an import or an executable path.
+- `tests/structural_baseline.json` retains `old` paths for the pre-migration Git
+  baseline and `new` paths for the canonical implementations. Its original hashes
+  remain unchanged; `entry_point_updates` lists exact permitted text/path changes
+  per canonical file. The optional checkpoint test uses the old path only with
+  `git show` at that historical commit.
+- The mapping table above retains removed names to translate old commands.
+
+No files were moved in the wrapper cleanup. Its 14 deletions are exactly the
+wrappers listed in the mapping table; package implementations remain in place.
 
 ## Checkpoints, data and outputs
 
@@ -128,29 +161,30 @@ deleted or relocated.
 From the repository root:
 
 ```bash
-python -m unittest discover -s CNN-build/tests -v
-python -m compileall -q CNN-build
+python -S -m unittest discover -s CNN-build/tests -p test_structure.py -v
 git diff --check
 ```
 
-On the existing Python 3.14.2 environment: **22 tests discovered, 12 passed,
-10 skipped**. NumPy and Matplotlib are available; PyTorch and ViZDoom are absent.
-No library installation is required to organize the repository. No pre-existing
-test suite, linter or build configuration was present.
+For wrapper cleanup: **14 standard-library checks passed**. The command uses
+`-S` to disable site packages, runs only `test_structure.py`, and does not import
+model/engine modules or third-party dependencies. No packages, virtual environments
+or downloads were created, and no network access occurred during this cleanup.
 
 The passing checks verify all moved source against normalized SHA-256 snapshots
-from the baseline, reversing only the permitted import substitutions. They also
-verify every original CNN research document and CSV/JSON file, legacy entry-point
-presence, package import targets, ignored artifact patterns, actual preprocessing
-function behavior, action/duration semantics, aiming thresholds, defaults and the
-original split statements against the historical v2 manifest. Pure-function tests
-compile selected original AST nodes unchanged to avoid importing absent engine/ML
-packages. They do not claim full runtime import coverage.
+from the baseline, reversing only permitted import and entry-point text/path
+substitutions. They also verify every original CNN research document and CSV/JSON
+file, wrapper absence, canonical import targets, ignored artifact patterns, syntax,
+documentation links, action/duration semantics, aiming thresholds and defaults.
+They inspect the evaluator's actual path guard without importing the evaluator.
+These checks do not claim model execution or full runtime import coverage.
 
-Both old and new summary comparison CLIs were executed using the committed v1/v2
-summary inputs; temporary outputs matched the committed comparison table exactly.
-Model execution, augmentation, synthetic checkpoint compatibility and all 26
-dependency-backed `--help` invocations are implemented as tests but skipped here.
+The canonical summary-comparison CLI was executed using committed v1/v2 summary
+inputs; its temporary output matched the committed comparison table exactly.
+The existing NumPy preprocessing/split tests are now grouped with the optional
+dependency-backed checks in `test_runtime.py`, leaving the structural suite free
+of third-party imports. None of those runtime tests were run during this cleanup.
+Model execution, augmentation, synthetic checkpoint compatibility and 13 canonical
+dependency-backed `--help` invocations remain available for a configured environment.
 The synthetic checkpoint test executes the baseline model definition from Git,
 strict-loads its generated state_dict into the relocated model, and compares CPU
 predictions. This requires retaining the baseline commit in local Git history.

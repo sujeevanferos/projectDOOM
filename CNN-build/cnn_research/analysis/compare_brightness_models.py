@@ -2,7 +2,7 @@
 """Compare CNN v1 and v2 brightness robustness summaries (unpaired episodes).
 
 Usage:
- python compare_brightness_models.py \
+ python -m cnn_research.analysis.compare_brightness_models \
    --v1 runs/brightness_robustness/summary.csv \
    --v2 runs/brightness_robustness_v2/summary.csv
 """

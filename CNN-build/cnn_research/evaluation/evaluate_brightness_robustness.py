@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Experiment 5A: evaluate a frozen imitation CNN at multiple input brightness levels.
 
-Requires train_imitation_cnn.py in the same directory. No labels or training.
+Run from CNN-build; imports cnn_research.training.train_imitation_cnn. No labels or training.
 Brightness is applied ONLY to the RGB frame input, never to the Doom environment.
 """
 import argparse
@@ -95,8 +95,8 @@ def main():
         parser.error('Brightness values must be unique')
     if not args.checkpoint.is_file():
         parser.error(f'Checkpoint not found: {args.checkpoint}')
-    if not Path('train_imitation_cnn.py').exists():
-        parser.error('Run from CNN-build with train_imitation_cnn.py in this directory')
+    if not Path('cnn_research/training/train_imitation_cnn.py').exists():
+        parser.error('Run from CNN-build with cnn_research/training/train_imitation_cnn.py available')
     args.out_dir.mkdir(parents=True, exist_ok=True)
     episode_path = args.out_dir / 'episodes.csv'
     summary_path = args.out_dir / 'summary.csv'

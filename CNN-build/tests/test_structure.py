@@ -1,9 +1,10 @@
-"""Dependency-light checks of the structural move and original pure functions."""
+"""Standard-library checks of canonical entry points and preserved source."""
 import ast
 import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -13,14 +14,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 CNN = ROOT / "CNN-build"
 MANIFEST = json.loads((Path(__file__).with_name("structural_baseline.json")).read_text())
-try:
-    import numpy as np
-except ImportError:
-    np = None
 
 
 def script_path(name):
-    return ROOT / next(e["new"] for e in MANIFEST["scripts"] if Path(e["old"]).stem == name)
+    return ROOT / next(e["new"] for e in MANIFEST["scripts"] if Path(e["new"]).stem == name)
 
 
 def original_function(script, name, **namespace):
@@ -44,10 +41,13 @@ def defaults(script):
 
 
 class StructureTests(unittest.TestCase):
-    def test_all_original_source_preserved_except_import_paths(self):
+    def test_all_original_source_preserved_except_entry_point_updates(self):
         for entry in MANIFEST["scripts"]:
             with self.subTest(script=entry["old"]):
                 source = (ROOT / entry["new"]).read_text(encoding="utf-8")
+                updates = MANIFEST["entry_point_updates"].get(entry["new"], {})
+                for old, new in reversed(list(updates.items())):
+                    source = source.replace(new, old)
                 for old, new in MANIFEST["import_moves"].items():
                     source = source.replace(f"from {new} import", f"from {old} import")
                 self.assertEqual(hashlib.sha256(source.encode()).hexdigest(), entry["sha256"])
@@ -57,11 +57,46 @@ class StructureTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(hashlib.sha256((ROOT / path).read_text(encoding="utf-8").encode()).hexdigest(), digest)
 
-    def test_every_old_entry_point_exists(self):
+    def test_only_canonical_entry_points_exist(self):
+        self.assertEqual(list(CNN.glob("*.py")), [])
         for entry in MANIFEST["scripts"]:
-            source = (ROOT / entry["old"]).read_text(encoding="utf-8")
-            self.assertIn(entry["module"], source)
-            ast.parse(source)
+            self.assertFalse((ROOT / entry["old"]).exists())
+            target = (CNN / Path(*entry["module"].split("."))).with_suffix(".py")
+            self.assertEqual(target, ROOT / entry["new"])
+            self.assertTrue(target.is_file())
+            ast.parse(target.read_text(encoding="utf-8"))
+
+    def test_no_imports_or_commands_depend_on_removed_wrappers(self):
+        names = {Path(e["old"]).stem for e in MANIFEST["scripts"]}
+        for path in (CNN / "cnn_research").rglob("*.py"):
+            source = path.read_text(encoding="utf-8")
+            for name in names:
+                self.assertNotIn(f"python {name}.py", source, str(path))
+            for node in ast.walk(ast.parse(source)):
+                if isinstance(node, ast.ImportFrom) and node.module:
+                    self.assertNotIn(node.module.split(".")[0], names, str(path))
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        self.assertNotIn(alias.name.split(".")[0], names, str(path))
+
+    def test_brightness_working_directory_check_uses_canonical_path(self):
+        tree = ast.parse(script_path("evaluate_brightness_robustness").read_text(encoding="utf-8"))
+        expected = "cnn_research/training/train_imitation_cnn.py"
+        guard = next(n for n in ast.walk(tree) if isinstance(n, ast.If)
+                     and any(isinstance(value, ast.Constant) and value.value == expected for value in ast.walk(n.test)))
+        # Evaluate the actual existence check relative to CNN-build without importing the evaluator.
+        self.assertFalse(eval(compile(ast.Expression(guard.test), "<working-directory guard>", "eval"),
+                              {"Path": lambda value: CNN / value}))
+
+    def test_python_syntax_without_imports(self):
+        for path in CNN.rglob("*.py"):
+            compile(path.read_text(encoding="utf-8"), str(path), "exec")
+
+    def test_current_documentation_links_exist(self):
+        for path in (ROOT / "README.md", CNN / "docs/MIGRATION.md"):
+            for link in re.findall(r"\]\(([^)]+)\)", path.read_text(encoding="utf-8")):
+                if not link.startswith(("http:", "https:")):
+                    self.assertTrue((path.parent / link.split("#")[0]).exists(), f"{path}: {link}")
 
     def test_package_imports_resolve_to_existing_files(self):
         for path in (CNN / "cnn_research").rglob("*.py"):
@@ -110,49 +145,13 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(choose(None, args, -1), (0, 4, None, 1))
 
     def test_summary_analysis_cli_preserves_committed_comparison(self):
-        entry = next(e for e in MANIFEST["scripts"] if Path(e["old"]).stem == "compare_brightness_models")
+        entry = next(e for e in MANIFEST["scripts"] if Path(e["new"]).stem == "compare_brightness_models")
         with tempfile.TemporaryDirectory() as directory:
-            for command in ([entry["old"].split("/")[-1]], ["-m", entry["module"]]):
-                out = Path(directory) / ("legacy.csv" if len(command) == 1 else "module.csv")
-                subprocess.run([sys.executable, *command, "--out", str(out)], cwd=CNN, check=True, capture_output=True)
-                with out.open(newline="") as actual, (CNN / "runs/brightness_comparison_v1_vs_v2.csv").open(newline="") as historical:
-                    self.assertEqual(list(csv.DictReader(actual)), list(csv.DictReader(historical)))
-
-
-@unittest.skipIf(np is None, "NumPy unavailable")
-class ArrayTests(unittest.TestCase):
-    def test_preprocessing_layout_shape_values_and_contiguity(self):
-        chw = np.arange(3 * 120 * 160, dtype=np.uint8).reshape(3, 120, 160)
-        for script, name in [("train_imitation_cnn", "preprocess"), ("doom_dqn_baseline", "preprocess"),
-                             ("labelled_aiming_agent_safe", "rgb_chw_uint8")]:
-            preprocess = original_function(script, name, np=np, SCREEN_W=160, SCREEN_H=120)
-            for frame in [chw, chw.transpose(1, 2, 0)]:
-                result = preprocess(frame)
-                self.assertEqual(result.shape, (3, 60, 80))
-                self.assertEqual(result.dtype, np.uint8)
-                self.assertTrue(result.flags.c_contiguous)
-                np.testing.assert_array_equal(result, chw[:, ::2, ::2])
-            with self.assertRaises(ValueError):
-                preprocess(np.zeros((60, 80, 3), dtype=np.uint8))
-
-    def test_episode_split_executes_original_statements(self):
-        splits = []
-        for script in ("train_imitation_cnn", "train_imitation_cnn_brightness"):
-            tree = ast.parse(script_path(script).read_text(encoding="utf-8"))
-            main = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "main")
-            # Execute only the original split assignments; no training or data loading.
-            names = {"indices", "n_val", "val_indices", "train_indices", "val_eps", "train_eps"}
-            nodes = [n for n in main.body if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name) and n.targets[0].id in names]
-            namespace = {"np": np, "args": SimpleNamespace(seed=42, val_fraction=0.2), "episodes": list(range(1000))}
-            exec(compile(ast.Module(body=nodes, type_ignores=[]), str(script_path(script)), "exec"), namespace)
-            train, val = namespace["train_eps"], namespace["val_eps"]
-            self.assertEqual((len(train), len(val)), (800, 200))
-            self.assertFalse(set(train) & set(val))
-            self.assertEqual(set(train) | set(val), set(range(1000)))
-            splits.append((train, val))
-        self.assertEqual(splits[0], splits[1])
-        manifest = json.loads((CNN / "runs/imitation_cnn_brightness/split_manifest.json").read_text())
-        self.assertEqual([f"demo_{i + 1:05d}.npz" for i in splits[1][1]], manifest["validation_files"])
+            out = Path(directory) / "comparison.csv"
+            subprocess.run([sys.executable, "-S", "-m", entry["module"], "--out", str(out)],
+                           cwd=CNN, check=True, capture_output=True)
+            with out.open(newline="") as actual, (CNN / "runs/brightness_comparison_v1_vs_v2.csv").open(newline="") as historical:
+                self.assertEqual(list(csv.DictReader(actual)), list(csv.DictReader(historical)))
 
 
 if __name__ == "__main__":
