@@ -6,8 +6,7 @@ wrappers from `CNN-build/`. Each script now has one canonical source location
 under `cnn_research/`. No research functions, classes, algorithms, settings or
 results are rewritten. Stage 2 code refactoring remains deferred.
 
-Baseline: commit `645c0ce4a023240b3776b0e78e7b0a41c0e011a5`. All research
-documents, historical results and artifact paths under `CNN-build/` are preserved.
+Baseline: commit `645c0ce4a023240b3776b0e78e7b0a41c0e011a5`. All research documents and historical results are preserved; the chronological research log has been relocated to `docs/archive/` without changing its original entries.
 The new `SNN-build/README.md` reserves future work; it contains no implementation.
 
 ## Commands and imports
@@ -120,7 +119,7 @@ package consumers share the canonical model, and help commands use modules only.
 
 The following legacy identifiers are intentionally retained as evidence:
 
-- `DOOM_CNN_research_log.md` and `docs/{CODEX_HANDOFF,EXPERIMENTS,METHODOLOGY,REPRODUCIBILITY}.md`
+- `docs/archive/DOOM_CNN_research_log.md` and `docs/{CODEX_HANDOFF,EXPERIMENTS,METHODOLOGY,REPRODUCIBILITY}.md`
   retain their historical script names and commands unchanged.
 - `runs/imitation_cnn_brightness/metadata.json` and the trainer's matching
   `source_script` metadata value retain `train_imitation_cnn.py` as a provenance
