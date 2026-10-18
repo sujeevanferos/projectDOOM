@@ -1,164 +1,144 @@
-# projectDOOM: CNN and Spiking Neural Network Research in ViZDoom
+# projectDOOM — Neuromorphic Control of DOOM
 
-**Research-stage repository | Convolutional and recurrent spiking neural network approaches to vision-based control; FPGA deployment remains future work**
+**Team research project | Visual game-playing agents → recurrent spiking neural networks → FPGA-based external control**
 
-## Abstract
+> **Research status (October 2026):** The CNN software baseline has been trained and extensively evaluated. The team has implemented RSNN prototypes and is currently training the newer RSNN v2. FPGA synthesis, hardware inference, and the proposed two-computer demonstration have **not yet been verified**.
 
-This project investigates visual decision-making in the ViZDoom `basic.wad` environment as a preliminary stage toward implementing spiking neural networks (SNNs) on FPGA hardware. The research includes a substantially evaluated convolutional neural network (CNN) pipeline and a separately developed recurrent spiking neural network (RSNN) proof of concept maintained by a team member as a Git submodule. An initial reward-driven deep Q-network (DQN) baseline exhibited unstable, sometimes degenerate policies. The subsequent pipeline used ViZDoom's object-label interface to construct a rule-based aiming teacher, collected successful gameplay demonstrations, and trained a CNN by supervised imitation using RGB frames alone. A second CNN, trained with stochastic brightness augmentation, was evaluated for robustness to changes in input intensity. In the available evaluations, this second model achieved 3,000 enemy eliminations in 3,000 trials across three brightness settings. These CNN findings concern a constrained single-scenario benchmark, **not** general DOOM competence or an FPGA implementation. The RSNN work implements a recurrent leaky integrate-and-fire model with experimental policy-gradient training and evaluation artifacts; its learning effectiveness and comparability to the CNN results remain under investigation.
+## Vision
+
+The goal of **projectDOOM** is to build an autonomous DOOM controller that runs as a **spiking neural network (SNN) on FPGA hardware**, receiving game observations from one computer and sending control actions back to that computer. The game runs on the host PC; the neural decision-making is intended to run on a separate physical FPGA platform. This will allow us to study learned control, spike-based computation, digital hardware constraints, and end-to-end communication latency.
+
+The convolutional neural network (CNN) was deliberately developed as a **scientific and engineering baseline**, not as the final deliverable. It helped us understand how a learning-based controller interprets rendered frames, chooses gameplay actions without direct human input, and behaves under controlled visual perturbations. In parallel, the team is developing **recurrent spiking neural networks (RSNNs)** for eventual hardware deployment.
+
+### Proposed end-to-end demonstration
+
+```text
+   PC A: DOOM / ViZDoom                 PC B: FPGA controller
+┌─────────────────────────┐          ┌──────────────────────────────┐
+│ Game engine and display │  frames  │ Observation / spike encoding │
+│ State, reward, kills    │ ───────> │ Recurrent LIF spiking core   │
+│ Executes received keys  │ <─────── │ Action decoding and output   │
+└─────────────────────────┘ commands └──────────────────────────────┘
+```
+
+*Conceptual architecture only.* Frame acquisition, the PC-to-FPGA communication channel, action actuation, real-time timing, numerical quantization, board resource usage, and actual hardware-in-the-loop control remain to be designed, implemented, and measured. The diagram should not be interpreted as an already demonstrated system.
 
 ## Research questions
 
-1. Can a CNN learn an effective left/right/fire controller from rendered RGB observations?
-2. How does supervised imitation of a reliable, privileged-information teacher compare with the initial reward-only DQN baseline?
-3. What spatial features and action-attribution patterns are observed inside the imitation CNN?
-4. Does brightness augmentation improve closed-loop control under input-intensity perturbations?
-5. Can a recurrent spiking neural network process visual observations and select actions in the same ViZDoom research setting?
-6. What evaluation controls and hardware constraints must be established before meaningful CNN–RSNN comparisons and FPGA mapping?
+1. Can a visual agent learn to control ViZDoom from game frames rather than human keypresses?
+2. What does a well-evaluated CNN baseline teach us about action choice, aiming, robustness, and experimental measurement?
+3. Can a recurrent LIF spiking network learn a viable DOOM policy using reinforcement learning?
+4. What is lost or preserved when an RSNN is quantized and mapped to FPGA arithmetic and memory resources?
+5. Can the final hardware controller play DOOM on another computer with measurable gameplay performance and bounded latency?
 
-## Scope and status
+## Research tracks and current status
 
-| Component | Status | Evidence |
+| Track | Contribution | Status |
 | --- | --- | --- |
-| DQN baseline | Investigated; unsatisfactory control in reported tests | `CNN-build/cnn_research/training/doom_dqn_baseline.py` |
-| Label-guided aiming teacher | Completed | `CNN-build/cnn_research/teacher/labelled_aiming_agent_safe.py` |
-| RGB imitation CNN v1 | Trained and evaluated | `CNN-build/cnn_research/training/train_imitation_cnn.py` |
-| Experiment 5A: brightness stress test | Completed | `CNN-build/cnn_research/evaluation/evaluate_brightness_robustness.py` |
-| Experiment 5B: feature maps and Grad-CAM | Exploratory analysis completed | `CNN-build/cnn_research/analysis/experiment_5b_feature_visualization.py` |
-| Experiment 5C: augmented CNN v2 | Trained, evaluated, and independently verified | `CNN-build/cnn_research/training/train_imitation_cnn_brightness.py`, `CNN-build/cnn_research/evaluation/verify_cnn_v2.py` |
-| Recurrent SNN proof of concept | Implemented in a separately maintained submodule; training and evaluation remain exploratory | [`SNN-build/`](SNN-build/) and [source repository](https://github.com/DakshayaniRamanesh/project_DOOM) |
-| FPGA deployment | Future research; not implemented or validated | No fixed-point synthesis, timing, power or resource measurements reported |
+| **CNN baseline** | DQN investigation, label-guided teacher, supervised RGB imitation CNN, explainability, brightness robustness | **Implemented and evaluated in software** |
+| **RSNN development** | Recurrent LIF networks, spike encoding, RSNN v1 exploratory policy learning, RSNN v2 actor–critic training | **Software prototypes implemented; RSNN v2 training in progress** |
+| **FPGA / two-PC integration** | Quantized neural inference on FPGA, frame transfer, action commands, hardware-in-the-loop validation | **Future implementation** |
 
-## Method overview
+The team uses **[sujeevanferos/projectDOOM](https://github.com/sujeevanferos/projectDOOM)** as the primary integration repository. The independently developed SNN research is maintained in **[DakshayaniRamanesh/project_DOOM](https://github.com/DakshayaniRamanesh/project_DOOM)** and linked here under **[`SNN-build/`](SNN-build/)** as a Git submodule. The CNN track is maintained here under **[`CNN-build/`](CNN-build/)**.
 
-The ViZDoom environment renders RGB24 frames at **160 × 120**, then the student network subsamples them to **3 × 60 × 80** (channel-first). The action vocabulary is `MOVE_LEFT`, `MOVE_RIGHT`, and `ATTACK`; a second prediction head chooses an execution duration from **2, 4, or 8 game tics**.
+## CNN research: why it was built and what it established
 
-The teacher controller uses privileged bounding boxes to determine the enemy's horizontal offset from the image center, but its saved demonstration inputs contain RGB arrays, actions, rewards, and action durations—not bounding boxes. At CNN training and inference, enemy labels are **not** provided. The imitation CNN has three convolutional layers and two classification heads, optimized with cross-entropy. CNN v2 reuses the same model and episode split, applying multiplicative brightness augmentation only to the training images.
+The first reward-only CNN/Deep Q-Network baseline exhibited unstable and often ineffective policies in the reported experiments. We therefore developed a rule-based controller that uses ViZDoom's visible-object labels **only while producing demonstrations**. It generated 1,000 successful gameplay episodes comprising 5,781 RGB frame–action samples. A CNN trained by supervised **imitation learning** subsequently selected actions from RGB input **without accessing the labels buffer**.
 
-**Important distinction:** the label-guided controller is used for dataset generation; the trained CNN is evaluated from RGB alone. The reported imitation accuracy measures agreement with teacher actions, whereas gameplay success measures an enemy kill reported by ViZDoom's `KILLCOUNT`.
+The CNN observes RGB tensors of **3 × 60 × 80**, chooses among **left, right, attack**, and predicts action durations of **2, 4, or 8 tics**. The CNN v2 variant retains its architecture and adds brightness augmentation during training.
 
-### Recurrent SNN research track
+| CNN result | Recorded observation |
+| --- | --- |
+| Teacher data | 1,000 successful demonstrations; 5,781 frame–action decisions |
+| CNN v1 held-out action agreement | 99.56% at epoch 50 |
+| CNN v2 held-out action agreement | 99.74% at epoch 50 |
+| CNN v1 dark-input test | 98/100 kills at 0.50× brightness; 97/100 at 0.75× |
+| CNN v2 extended robustness verification | 3,000/3,000 observed kills: 1,000 episodes each at 1.0×, 0.50×, and 0.75× |
 
-The team-maintained [`SNN-build/`](SNN-build/) submodule provides an independent RSNN prototype for ViZDoom BASIC. Its current implementation uses **32 × 24 grayscale** observations, **deterministic rate-based spike encoding** over **8 neural timesteps** per game decision, and **96 recurrent leaky integrate-and-fire neurons** with learnable spike feedback. An analog readout scores **six action combinations** (including simultaneous movement and attack). The code also includes an experimental REINFORCE training mode with surrogate gradients and truncated backpropagation through time.
+These results apply to the constrained **ViZDoom BASIC** scenario, not general DOOM. Supervised agreement with a teacher and gameplay kill success measure different things; 100% *observed* success does not imply perfect future reliability. Brightness was multiplied into the **CNN input**, not changed in the game environment. CNN v1/v2 tests used independent, unpaired episodes.
 
-This is a **research prototype**, not an established reproduction of the CNN results or a validated hardware implementation. The SNN source repository contains checkpoints and evaluation CSVs, but the committed documentation does not establish a controlled, matched CNN–RSNN comparison. Its differing image representation, action vocabulary, decision timing and training procedure must be accounted for in future experiments. For technical details, commands and evidence, consult the [SNN repository documentation](SNN-build/README.md).
+For methods, experiment numbering, limitations, and source CSVs, see **[CNN methodology](CNN-build/docs/METHODOLOGY.md)** and **[experiment record](CNN-build/docs/EXPERIMENTS.md)**. Experiment **5A** concerns brightness testing, **5B** feature visualization/Grad-CAM, and **5C** brightness-augmented training.
 
-## Selected reported findings
+## RSNN development: current team approach
 
-| Evaluation | Recorded result | Interpretation |
-| --- | --- | --- |
-| Teacher demonstration collection | 1,000/1,000 kills; 5,781 frame–action samples | Successful teacher examples, not a CNN result |
-| CNN v1, held-out demonstration frames | 99.56% action accuracy at epoch 50 | Teacher-action classification, not gameplay success |
-| CNN v2, held-out demonstration frames | 99.74% action accuracy at epoch 50 | Same validation split procedure; augmentation on training only |
-| CNN v1, 5A at 0.50× / 0.75× | 98/100 and 97/100 kills | Sensitivity to darker inputs |
-| CNN v2, initial 5C at 0.50× / 0.75× | 100/100 and 100/100 kills | Improved observed dark-condition reliability |
-| CNN v2, later verification at 1.0× / 0.50× / 0.75× | 1,000/1,000 kills **at each** intensity | 3,000/3,000 observed kills; finite-sample estimate |
+The SNN research track explores **recurrent spiking neural networks** whose neurons accumulate membrane potential, fire discrete spikes, and retain state across successive game decisions. The teammate's newer **RSNN v2** code introduces:
 
-For the 1,000-trial verification conditions, the 95% Wilson interval for each observed 100% kill rate has a lower bound of approximately **99.62%**. Mean rewards were **76.131** (1.0×), **76.100** (0.50×), and **75.685** (0.75×). Comparisons between models were made on **unpaired random episodes**; improvements should not be described as matched-seed causal estimates or universal guarantees.
+- **Input:** 32 × 24 grayscale pixels (768 values), converted to rate-coded spikes across a default eight neural timesteps per game decision.
+- **Spiking core:** 96 leaky integrate-and-fire (LIF) units with learnable **96 × 96** recurrent synaptic feedback. Membrane and spike states persist within an episode and reset between episodes.
+- **Learning:** on-policy, single-environment Advantage Actor–Critic (A2C) with generalized advantage estimation (**γ = 0.99, λ = 0.95**), a separate scalar critic, policy-entropy regularization, truncated backpropagation through time, and gradient clipping at norm **0.5**.
+- **Surrogate gradients:** fast-sigmoid derivative `1 / (1 + 2|u − threshold|)^2`, allowing gradient-based optimization despite hard spikes during the forward pass.
+- **Policy:** six outputs—noop, left, right, shoot, left+shoot, right+shoot—rather than the CNN's three actions and separate duration head.
+- **Hardware-oriented accounting:** 73,728 input connection weights + 9,216 recurrent + 576 actor = **83,520 connection weights**; including input and actor biases yields **83,622 actor/core parameters**. The **97-parameter critic** is for training, leading to **83,719 total trainable parameters** in the default actor–critic model.
 
-The following table reports **CNN-track findings only**; the independently developed RSNN results should not be combined with these counts without a shared evaluation protocol.
+**Status qualification:** These architectural and algorithmic features are drawn from the teammate's current upstream RSNN v2 implementation and her supplied design notes. **RSNN v2 is still being trained; this README makes no claim that it has already learned a successful policy.** The resource numbers count model parameters, *not* synthesized FPGA utilization. See [RSNN architecture and hardware limitations](docs/RSNN_AND_HARDWARE.md).
 
-Source data: `CNN-build/runs/labelled_teacher/metrics.csv`, `CNN-build/runs/imitation_cnn/history.csv`, `CNN-build/runs/imitation_cnn_brightness/history.csv`, and the committed brightness and verification `summary.csv` files.
+**Submodule note:** The main repository pins a specific commit of the teammate's repository, and the pinned revision can lag newer upstream code. At the time of this documentation update, the pinned revision does not include the newer v2 files visible upstream. Updating `SNN-build` to an agreed teammate commit is a **separate integration step**; this documentation change does not alter its pointer or modify her repository.
+
+### Why a direct CNN–RSNN performance comparison needs care
+
+The models currently differ in input representation (RGB versus grayscale), spatial resolution, action vocabulary, temporal state, and learning method. We should not compare their validation accuracy or reward figures as if they arose from identical experiments. A later matched benchmark must standardize scenario settings, observation timing, success definition, episode budgets, and evaluation seeds.
 
 ## Repository layout
 
 ```text
 projectDOOM/
-├── README.md                     # Research overview
-├── .gitmodules                    # SNN research submodule source
-├── .gitignore
-├── requirements.txt              # Imported dependencies; historical versions unknown
+├── README.md                   # Team overview and current progress
+├── docs/
+│   ├── RSNN_AND_HARDWARE.md    # RSNN v2 design, accounting and limitations
+│   └── INTEGRATION_ROADMAP.md  # Work needed for fair benchmarks and FPGA control
 ├── CNN-build/
-│   ├── cnn_research/             # Original implementations, grouped by purpose
-│   │   ├── exploration/          # basic.py, doom_cnn.py, labelled_buffer_cnn.py
-│   │   ├── teacher/              # Calibration and both label-guided teachers
-│   │   ├── training/             # DQN baseline, imitation CNN v1 and v2
-│   │   ├── evaluation/           # Gameplay robustness, brightness, v2 verification
-│   │   └── analysis/             # Feature maps / Grad-CAM, summary comparison
-│   ├── tests/                    # Structural checks and optional runtime tests
-│   ├── docs/                     # Research documentation; archive/ holds original log
-│   └── runs/                     # Historical CSV/JSON evidence at original paths
-└── SNN-build/                    # Git submodule: independently maintained RSNN prototype
-    ├── README.md                 # RSNN methods, status, and instructions
-    └── rsnn_doom_quickstart/      # Model, experiments, checkpoints and results
+│   ├── cnn_research/           # Teacher, DQN, imitation, evaluation, explainability
+│   ├── docs/                   # CNN methodology, results, migration, reproducibility
+│   ├── tests/
+│   └── runs/                   # Selected lightweight CSV/JSON evidence
+├── SNN-build/                  # Git submodule: teammate's SNN codebase
+├── .gitmodules
+└── requirements.txt            # CNN-focused dependency inventory (not pinned)
 ```
-
-This is a **structural organization only**: existing functions, classes, model definitions, defaults and scientific behavior are preserved. Shared components and configurations have not been extracted. The canonical model, student preprocessing, environment setup and episode dataset remain together in `cnn_research.training.train_imitation_cnn`; the five downstream scripts import that module explicitly. The RSNN is tracked as a separate research prototype; FPGA deployment remains future research.
-
-Experiment commands still require **the working directory to be `CNN-build/`**. All relative inputs and outputs keep their original meaning. Legacy `python script.py ...` invocations are no longer supported; use `python -m cnn_research.<area>.<script> ...`. Use the module interface rather than directly executing files inside the package. See the [complete old-to-new mapping and inspection findings](CNN-build/docs/MIGRATION.md).
 
 ## Getting started
 
-To obtain both research tracks when cloning, initialize the SNN submodule:
+Clone both research tracks (at the **submodule commit pinned by the main repository**):
 
 ```bash
 git clone --recurse-submodules https://github.com/sujeevanferos/projectDOOM.git
+cd projectDOOM
 ```
 
-For an existing checkout, use `git submodule update --init SNN-build`. The parent repository records an exact SNN commit; later changes from the teammate's repository are not imported automatically. No software installation or training is performed by submodule initialization.
+For an existing checkout: `git submodule update --init --recursive`. This does **not** fetch the latest teammate RSNN v2 training changes into the pinned main repository automatically.
 
-### CNN environment and workflows
-
-Use an existing Linux environment with Python and the dependencies inventoried in [requirements.txt](requirements.txt): ViZDoom, NumPy, PyTorch, and Matplotlib. Exact historical package versions are unknown; this file is not an environment lock. Preserve your server's CUDA-compatible PyTorch installation. ViZDoom must locate its installed `basic.wad` scenario. CUDA selection and existing `--cpu` flags are unchanged. No libraries need to be installed for the repository moves themselves.
-
-The following commands use fresh output directories. Their arguments were checked against the preserved scripts; **training, gameplay, visualization and original-checkpoint loading were not executed during this organization** because their dependencies/artifacts are unavailable here. CLI help checks are included in the test suite for an environment with the full dependencies.
+For the reorganized CNN package, work from `CNN-build/`:
 
 ```bash
 cd CNN-build
-python -m cnn_research.teacher.labelled_aiming_agent_safe \
-  --episodes 1000 --headless --save-demos \
-  --out runs/labelled_teacher_new/metrics.csv --demo-dir runs/labelled_teacher_new/demos
-python -m cnn_research.training.train_imitation_cnn --epochs 50 \
-  --demo-dir runs/labelled_teacher_new/demos --out-dir runs/imitation_cnn_new
-python -m cnn_research.training.train_imitation_cnn --eval --episodes 100 --headless \
-  --checkpoint runs/imitation_cnn_new/best.pt --out-dir runs/imitation_eval_new
-python -m cnn_research.training.train_imitation_cnn_brightness --epochs 50 \
-  --demo-dir runs/labelled_teacher_new/demos --out-dir runs/imitation_cnn_brightness_new
-python -m cnn_research.evaluation.evaluate_brightness_robustness \
-  --checkpoint runs/imitation_cnn_brightness_new/best.pt \
-  --out-dir runs/brightness_robustness_v2_new --episodes 100 --headless
-python -m cnn_research.analysis.experiment_5b_feature_visualization \
-  --checkpoint runs/imitation_cnn_new/best.pt --out-dir runs/experiment_5b_features_new \
-  --episodes 12 --samples 9 --brightness 1.0 0.5 --headless
-python -m cnn_research.evaluation.verify_cnn_v2 --headless \
-  --checkpoint runs/imitation_cnn_brightness_new/best.pt --out-dir runs/cnn_v2_verification_new
+python -m cnn_research.teacher.labelled_aiming_agent_safe --help
+python -m cnn_research.training.train_imitation_cnn --help
+python -m cnn_research.training.train_imitation_cnn_brightness --help
+python -m cnn_research.evaluation.verify_cnn_v2 --help
 ```
 
-**Do not rerun collection/training into existing results directories.** Several scripts explicitly refuse to overwrite saved outputs. Demonstration `.npz` files and trained `.pt` checkpoints are excluded from the Git repository, so a fresh clone cannot run evaluation without separately obtaining or recreating those artifacts. See [Reproducibility](CNN-build/docs/REPRODUCIBILITY.md).
+See [CNN reproducibility](CNN-build/docs/REPRODUCIBILITY.md) and [migration guide](CNN-build/docs/MIGRATION.md) for exact commands. Most training datasets (`.npz`) and checkpoints (`.pt`) are deliberately excluded from Git and must be regenerated or restored locally; the repository is not a complete pretrained-model distribution.
 
-### SNN environment and workflows
-
-The SNN implementation is independently maintained; see its [README](SNN-build/README.md) and [dependency inventory](SNN-build/rsnn_doom_quickstart/requirements.txt). CNN and SNN dependency lists are not a unified, version-locked environment. Run experiments only in a prepared environment and preserve checkpoint/version provenance.
-
-## Verification
-
-From the repository root, using the existing Python environment:
+For the newer RSNN v2 scripts, use the teammate's **current upstream checkout** and [corrected-v2 guide](https://github.com/DakshayaniRamanesh/project_DOOM/blob/master/rsnn_doom_quickstart/README_CORRECTED_V2.md). Example *offline* checks after installing the relevant dependencies:
 
 ```bash
-python -m unittest discover -s CNN-build/tests -v
-python -m compileall -q CNN-build
-git diff --check
+cd rsnn_doom_quickstart
+python -m pytest -q tests/test_rsnn_v2_corrected.py
+python train_rsnn_v2.py --mode smoke
 ```
 
-The organization was checked on Python 3.14.2: **12 tests passed, 10 skipped** (earlier structural migration; not a fresh test run for the current branch). Source-preservation hashes cover all 14 implementations (allowing only six import statements to change), and every existing research document and CSV/JSON evidence file under `CNN-build/`. Available tests also cover preprocessing, action/duration mappings, teacher thresholds, defaults, the original episode split against the committed manifest, and both summary-comparison CLI interfaces. The comparison reproduced the committed table into a temporary directory.
+A smoke test validates code behavior or differentiability, **not** a trained DOOM-playing policy or FPGA deployment. See the upstream guide before starting/resuming training.
 
-PyTorch-dependent CPU tests and full import/CLI help checks explicitly skip when their dependencies are missing. CPU tests include output shapes, RGB normalization, brightness transforms, and a strict load from synthetic weights created using the original model definition. These do not substitute for restoring original trained checkpoints. Real gameplay and original checkpoint tests require explicit opt-ins; see [verification details](CNN-build/docs/MIGRATION.md#verification-and-remaining-checks). No experiments were rerun and no trained artifacts were generated.
+## Roadmap to the actual goal
 
-## Documentation
+1. **Finish and validate RSNN v2 training:** report learning curves, kill rates, rewards, action frequencies, held-out seeds and failure analysis alongside random/fixed-action baselines.
+2. **Establish a fair software benchmark:** align action protocols, conditions, success metrics and test budgets before attempting CNN–RSNN comparative claims.
+3. **Prepare hardware inference:** select an FPGA target, define spike/state data layouts, arithmetic precision and weight transport, and test quantization against floating-point RSNN traces.
+4. **Implement the two-computer loop:** obtain visual observations on the game PC, transmit inputs to hardware, receive decoded control outputs, and apply them to the game without manual per-action decisions.
+5. **Measure end-to-end operation:** gameplay success, per-decision latency, interface throughput, timing closure, FPGA logic/memory/DSP utilization, power where measurable, and reliability across repeated sessions.
 
-The CNN documents below concern the CNN research track. The [RSNN submodule README](SNN-build/README.md) is the primary record of its currently implemented methods and limitations.
+Details and stage-gate acceptance tests: [Integration roadmap](docs/INTEGRATION_ROADMAP.md).
 
-- [Methodology and model architecture](CNN-build/docs/METHODOLOGY.md)
-- [Experiment chronology and measurements](CNN-build/docs/EXPERIMENTS.md)
-- [Reproduction and artifact management](CNN-build/docs/REPRODUCIBILITY.md)
-- [Legacy research log](CNN-build/docs/archive/DOOM_CNN_research_log.md)
-- [Structural migration guide and verification](CNN-build/docs/MIGRATION.md)
+## Research limitations and attribution
 
-The chronological research log is preserved as a historical record; its script names may refer to pre-migration paths. The migration guide records old-to-new mappings and structural verification. Methodology, experiments and reproducibility describe the current canonical package.
-
-## Limitations and planned work
-
-The task is restricted to a single ViZDoom scenario, action vocabulary, and enemy class. The teacher provides privileged information **only during data generation**, and teacher-labeled episodes are not a substitute for diverse unseen maps or settings. Brightness modifications affect the **CNN input tensor**, not actual scene lighting or game physics. Grad-CAM provides qualitative attributions, not proof of object detection. The RSNN prototype implements spike encoding, recurrent LIF dynamics, surrogate-gradient learning machinery, and an exploratory training workflow, but its generalization and controlled comparison against the CNN remain open. FPGA mapping, fixed-point arithmetic, throughput, power, timing and resource measurements have not been validated.
-
-## Citation and attribution
-
-This repository is an evolving research prototype and is **not a peer-reviewed publication**. If citing the implementation, cite this repository and its specific commit, and separately attribute the [RSNN contributor repository](https://github.com/DakshayaniRamanesh/project_DOOM) and its pinned submodule commit, together with the underlying ViZDoom and PyTorch tools. A formal bibliography, software version lockfile, and external scenario evaluations remain to be prepared.
+The project is ongoing, and this is a research repository rather than a peer-reviewed result. Source-based CNN and RSNN claims should be interpreted within the experiments actually run. A future FPGA implementation cannot be inferred from parameter counts alone. The CNN and RSNN repositories represent complementary contributions from team members; the upstream [RSNN repository](https://github.com/DakshayaniRamanesh/project_DOOM) retains its separate attribution, development history, and license considerations. Please reference the specific repository commits and experiment configurations when reproducing results.
